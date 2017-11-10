@@ -34,20 +34,25 @@ The first stop is to create a database, here default `pgbench_` which works the 
 
 ### Test
 
-pgbench est ensuite "lancé" en mode test avec le nombre de clients listés dans le fichier de configuration. 
-S'il y a plusieurs valeurs pour le nombre de clients dans le fichier **config**, une boucle est effectuée.
+<!--pgbench est ensuite "lancé" en mode test avec le nombre de clients listés dans le fichier de configuration. 
+S'il y a plusieurs valeurs pour le nombre de clients dans le fichier **config**, une boucle est effectuée.-->
 Then pgbench is launched just like a regular bench with a previously set number of clients from the `config` file.
 If it happens to have more than one value for the clients number in that file, a loop is performed.
 A second loop is performed if the file contains several values for scales (please refer to the previous post for details).
 
-### Collecte des données
+### Data collection
 Les données collectées comportent entre autres&nbsp;:
+Amongst data collection one can find:
 
- * `transactions`&nbsp;: la vitesse (`tps`) et le nombre total de transactions&nbsp;;
+ <!--* `transactions`&nbsp;: la vitesse (`tps`) et le nombre total de transactions&nbsp;;-->
+ * speed (tps) and total amount of transactions;
  * `latence` (moyenne, maximum et neuvième décile)&nbsp;: les 5 plus mauvais temps de latence sont affichées à l'écran pour information&nbsp;;
+ * `latency` (average, maximum and 90th percentile): the 5 worst latency values are displayed on screen for information purpuses;
  * `checkpoints`&nbsp;: le nombre de `checkpoints` effectués pendant le test&nbsp;;
+ * the number of checkpoints performed during the test;
  * `buffers`&nbsp;: les métriques `buf_check, buf_clean, buf_backend, buf_alloc, max_clean, backend_sync` sont expliquées [ici](https://www.postgresql.org/docs/current/static/monitoring-stats.html#PG-STAT-BGWRITER-VIEW).
-Mais aussi `max_dirty` et `wal_written`.
+ * metrics regarding buffers `buf_check, buf_clean, buf_backend, buf_alloc, max_clean, backend_sync` are all explained [here](https://www.postgresql.org/docs/current/static/monitoring-stats.html#PG-STAT-BGWRITER-VIEW).
+As well as `max_dirty` and `wal_written`.
 
 
 ### Génération du rapport
