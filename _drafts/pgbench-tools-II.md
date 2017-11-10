@@ -55,18 +55,22 @@ Amongst data collection one can find:
 As well as `max_dirty` and `wal_written`.
 
 
-### Génération du rapport
-Un fichier `index.html` contenant le rapport général est créé à la racine du dossier avec les graphiques précédemment cités (tps en fonction du nombre de client et du facteur d'échelle).
+### Global report
+
+<!--Un fichier `index.html` contenant le rapport général est créé à la racine du dossier avec les graphiques précédemment cités (tps en fonction du nombre de client et du facteur d'échelle).
 Des tableaux comparatifs pour chaque set sont également produits pour simplifier la consultation.
 Pour chaque test de chaque set, un rapport `index.html` est de plus généré avec les graphiques de tps, latence, iostat, meminfo, vmstat dans le dossier `result/numérodutest` (pour observer l'évolution des métriques au cours test).
+An `index.html` file is created at the root of the folder. It contains the aformentionned graphs (tps against client number and scaling factor).-->
+Tables containing detailled results for different products to simplify reading.
+For each test of each set, another report also named `index.html` is generated with graphs of tps, latency, iostat, meminfo and vmstat in a sub-folder `result/numberofset` which can give very extended information regarding the behaviour of server during the test.
 
-### Exemple
+### Example
 
-Voici ce qu'il se passe lorsqu'on lance la commande `runset`.
-
+<!--Voici ce qu'il se passe lorsqu'on lance la commande `runset`.-->
+Here is what to expect in your shell after firing  `runset`:
 ~~~
 
-postgres@NOEYYRYH pgbench-tools-master]$ ./runset
+postgres@BENCHER pgbench-tools-master]$ ./runset
 Removing old pgbench tables
 DROP TABLE
 VACUUM
