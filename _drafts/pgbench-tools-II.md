@@ -5,30 +5,23 @@ Draft: true
 published: true
 ---
       
-<!--
-Je vous ai parlé la [dernière fois](/post/benchmarking-pratique/) de pgbench-tools, un outils d'automatisation de test de bench. 
-Je vous propose aujourd'hui de démarrer avec un exemple et de plonger plus profondément dans cet outils.
--->
+This is a translation from french. You can find the original post [here](http://www.loxodata.com/post/benchmarking-pratique2/)
 
-Last time I spoke of pgbench-tools, which is benchmarking automatization tool.
-Today we are going to see how to start and give an example.
+Last time I spoke of pgbench-tools a benchmarking automatization tool.
+Today we are going to see how to make a proper start and give an example.
 Let's dive deeper into this tool !
 
 <!-- ## Déroulement d'une série de tests - étape par étape -->
 ## Unravelling the tests - step by step
 
-<!-- Voici ce à quoi vous pouvez vous attendre lorsque vous lancez pgbench-tools avec **./runset** 
-vous lancez une série de test appelée "set".
-Tout ce qui suit est scripté. -->
+
 We are going to take a look at what you can expect with **./runset** which starts a series of tests within a defined "set".
 Everything that follows i scripted.
 
-<!-- ### Initialisation de la base-->
+
 ### DB Intialisation 
 
-<!--Il s'agit de l'étape permettant de créer des données dans la base.
-L'outils réalise cette étape seul, en fonction du paramètre `scale`, il correspond à la commande suivante&nbsp;:
--->
+
 The first stop is to create a database, here default `pgbench_` which works the same as&nbsp;:
 
     pgbench -i
@@ -39,9 +32,10 @@ The first stop is to create a database, here default `pgbench_` which works the 
 S'il y a plusieurs valeurs pour le nombre de clients dans le fichier **config**, une boucle est effectuée.-->
 Then pgbench is launched just like a regular bench with a previously set number of clients from the `config` file.
 If it happens to have more than one value for the clients number in that file, a loop is performed.
-A second loop is performed if the file contains several values for scales (please refer to the previous post for details).
+A second loop is performed within if the file contains several values for scales (please refer to the previous post for details).
 
 ### Data collection
+
 Les données collectées comportent entre autres&nbsp;:
 Amongst data collection one can find:
 
@@ -300,12 +294,19 @@ C'est un argument valide si on est habituellement vigilant sur les VACUUM régul
 
 Vacuum, reproducibility, serialization and OS/DB statistics turn pgbench-tools into an extraordinary wrapper of pgbench.
 It is possible to find relevant tests for many different use cases according to the type of test, the size of the dataset, the number of clients among other things (remaining as approximation of course).
-Le vacuum, la reproductibilité, la sérialisation et les statistiques font de pgbench-tools une surcouche d'industrialisation de pgbench déjà extraordinaire.
-Il est possible de trouver les tests pertinents pour de nombreux cas pratiques (ceux-ci restent des approximations bien sûr) en fonction du type de test, du volume de données, du nombre de connexions concurrentes entre autres choses.
 
-Cependant, cet outil comporte des limitations que nous allons aborder dans un prochain article plus concret avec une série de test complète et un cadre de départ avec ses propres contraintes lié au contexte.
+<!-- Le vacuum, la reproductibilité, la sérialisation et les statistiques font de pgbench-tools une surcouche d'industrialisation de pgbench déjà extraordinaire.
+Il est possible de trouver les tests pertinents pour de nombreux cas pratiques (ceux-ci restent des approximations bien sûr) en fonction du type de test, du volume de données, du nombre de connexions concurrentes entre autres choses.-->
+
+However this tool has some limitations which we are going to explore in a next - _more practical_ - article with a complete series of test and a context set in the real world with its own constraints.
+I will also speak about many other aspects : interpretation of the results, the strategy underneath, and how to reach a (relatively) definitive conclusion.
+I will count the changes, improvements, corrections and new features on this project and they are numerous.
+
+Until next time, keep benching guys !
+
+<!-- Cependant, cet outil comporte des limitations que nous allons aborder dans un prochain article plus concret avec une série de test complète et un cadre de départ avec ses propres contraintes lié au contexte.
 J'aborderai également de nombreux aspects : interprétation des données statistiques, comment diriger une campagne de test, comment faire converger les résultats obtenus vers une conclusion.
-Je passerai aussi en revue les changements, améliorations, corrections et ajouts qu'il m'a été donné de contribuer sur ce projet et ils sont nombreux.
+Je passerai aussi en revue les changements, améliorations, corrections et ajouts qu'il m'a été donné de contribuer sur ce projet et ils sont nombreux.-->
 
 
-Just bench it !
+<!-- Just bench it !-->
