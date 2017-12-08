@@ -3,7 +3,8 @@ layout: post
 Title: Pgbench-tools - Going further
 Draft: true
 published: true
----      
+---
+      
 <!--
 Je vous ai parlé la [dernière fois](/post/benchmarking-pratique/) de pgbench-tools, un outils d'automatisation de test de bench. 
 Je vous propose aujourd'hui de démarrer avec un exemple et de plonger plus profondément dans cet outils.
@@ -127,14 +128,31 @@ Worst latency results:
 
 Je vous avais déjà parlé dans l'article précédent du contenu du __rapport de set__, je vais détailler un peu plus ici le contenu du __rapport de test__.
 Les donneés collectées sont stockées, ordonnées et groupées par set et par test, dans la base déclarée dans le fichier de configuration (par défaut `results`).
+Last time I exposed the __set report__, but this time I will focus on the __test report__.
+Collected data are stored, sorted and grouped by set and by test, in the aformentionned database which is chosen un the config file (defaults to `results`).
 
 On peut retrouver dans le dossier `pgbench-tools/results` un dossier pour chaque test dont le nom est le numéro du test et qui comporte ces mêmes informations.
 Cela permet de copier facilement les résultats de bench sans extraction supplémentaire.
+<!--Je vous avais déjà parlé dans l'article précédent du contenu du __rapport de set__, je vais détailler un peu plus ici le contenu du __rapport de test__.
+Les donneés collectées sont stockées, ordonnées et groupées par set et par test, dans la base déclarée dans le fichier de configuration (par défaut `results`).-->
 
 Enfin, la collecte des métriques `vmstat`, `iostat` et `meminfo` est ajoutée sous forme de fichiers logs dans ce même répertoire.
+One can find a subfolder named after each test's number in the main folder `pgbench-tools/results`. 
+One can easily copy these without having to make any dump from de database itself.
+
+<!--On peut retrouver dans le dossier `pgbench-tools/results` un dossier pour chaque test dont le nom est le numéro du test et qui comporte ces mêmes informations.
+Cela permet de copier facilement les résultats de bench sans extraction supplémentaire.-->
+
+At last, metrics such as `vmstat`, `iostat` and `meminfo` are collected into logfile in this very same folder.
+One can also find graphs showing the behaviour of tps, latency, CPU, memory, buffers and much more for each test.
+We will come back to this matter and go into more details latter on.
+Here is a sneak peak of graphs taken randomly.
+
+<!-- Enfin, la collecte des métriques `vmstat`, `iostat` et `meminfo` est ajoutée sous forme de fichiers logs dans ce même répertoire.
 On y trouve également des graphiques montrant l'évolution au cours du temps lors du test&nbsp;:  tps, latence, cpu, mémoire, buffers...
 Nous reviendrons avec encore davantage de détail sur ce sujet ultérieurement.
 Voici un aperçu des graphiques pour un test pris au hasard.
+Voici un aperçu des graphiques pour un test pris au hasard.-->
 
 <table style="border: 0px;">
   <tr>
@@ -156,13 +174,29 @@ Voici un aperçu des graphiques pour un test pris au hasard.
 ### Un mot sur l'échelle, le nombre de clients et le type de scripts
 
 Vous trouverez des informations qui permettent d'appréhender la partie théorique sur le facteur d'échelle sur ce [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting).
+## Parameters in details
 
 #### SCALE (échelle)
 Les lignes étant produites aléatoirement, leur contenu et leur structure n'ont ici pas ou peu d'importance car il s'agit d'une base témoin.
+### Foreword on scale, clients and the scripts used
+
+You may find relevant information to help you further on theoretical aspect of scale on this [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting).
+
+<!--Vous trouverez des informations qui permettent d'appréhender la partie théorique sur le facteur d'échelle sur ce [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting).-->
+
+#### SCALE 
+
+Since rows are produced randomly, their content and structure is of little consequence because it is merely database taken as an example.
+What needs to be understood here, is the size which is going to be taken at different scales is going to fit differently in cache, memory and disk.
+On a server with 8G of RAM and 20M cache, here is what one can expect :
+
+<!-- Les lignes étant produites aléatoirement, leur contenu et leur structure n'ont ici pas ou peu d'importance car il s'agit d'une base témoin.
 Ce qu'il faut retenir c'est la taille que va occuper la base aux différentes échelles.
 Sur une machine avec 8Go de RAM et 20Mo de cache voici comment la base de données peut être répartie (globalement)&nbsp;:
+Sur une machine avec 8Go de RAM et 20Mo de cache voici comment la base de données peut être répartie (globalement)&nbsp;: -->
 
 | facteur d'échelle  | taille correspondante | répartition des données  |
+| scale  | matching size | data main location  |
 |--------------------|-----------------------|--------------------------|
 | 1 |  15Mo | **shared_buffers** |
 | 10 | 150Mo | **shared_buffers** |
@@ -171,25 +205,39 @@ Sur une machine avec 8Go de RAM et 20Mo de cache voici comment la base de donné
 | 10000 | 150Go | **Disque**  |
 
 J'ai laissé ce paramètre par défaut **SCALES="1 10 100 1000"**
+Here I kept the defaults **SCALES="1 10 100 1000"**
 
 #### Nombre de clients
+#### Clients
 
 Cela dépend donc du nombre de connexions simultanées que vous attendez sur votre instance.
 J'ai laissé ce paramètre par défaut **SETCLIENTS="1 2 4 8 16 32"**.
+Clients are simultaneus connexions expected on the cluster. 
+I kept the defaults **SETCLIENTS="1 2 4 8 16 32"**.
 
 #### Type de script SQL
 Le type de script `sql` est également très important. Voici la liste disponible&nbsp;:
+#### Type of SQL script
 
 * __select__&nbsp;: contient une transaction avec un select sur valeur de clé primaire aléatoire. Parfait pour simuler une transaction sur un réplica en lecture seule&nbsp;;
 * __insert__&nbsp;: insertion d'une ligne de valeur aléatoire&nbsp;;
 * __insert-size__&nbsp;: insert massif avec en paramètre d'entrée le nombre de lignes&nbsp;;
 * __update__&nbsp;: transaction avec une mise a jour sur ligne unique de valeur aléatoire.
+The type of `sql` script also of much importance. Here is a list of what is available in the package&nbsp;:
 
 Ces trois dernières transactions conviennent pour un nœud primaire qui reçoit les écritures dans différents contextes d'utilisation.
+* __select__&nbsp;: Contains a transaction with a random SELECT on the PK. Perfect for replicas in Read-Only mode&nbsp;;
+* __insert__&nbsp;: INSERT of a random content&nbsp;;
+* __insert-size__&nbsp;: Bulk INSERT with the number of lines as parameter of input&nbsp;;
+* __update__&nbsp;: A single transaction with an UPDATE of random value.
 
 Pour les utilisations mixtes sur une instance unique&nbsp;:
+These last three transactions are fit for a primary which might suffers writes in different contexts.
 
 * __nobranch__&nbsp;: une transaction comportant un select, un update, un insert&nbsp;;
+Remains mixed use case for only clusters&nbsp;:
+
+* __nobranch__&nbsp;: A transaction with a SELECT, an UPDATE and an INSERT&nbsp;;
 * __tpc-b__ like: caractéristique des transactions [tpc](https://en.wikipedia.org/wiki/Transaction_Processing_Performance_Council) ou sur le site original [tpc-b](http://www.tpc.org/tpcb/default.asp).
 Qui consiste en 3 updates, 1 select, 1 insert. C'est le paramètre par défaut que j'ai choisi. Il est générique et permet de couvrir une large palette de cas d'utilisation.
 
