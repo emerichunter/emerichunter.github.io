@@ -27,7 +27,7 @@ To cut it short I chose `REPMGR`.
 Configuration is 3 nodes (1 primary and 2 standbys) plus a witness server.
 In case you wonder, this last player serves as as casting vote in a situation of doubt over which node need to be promoted.
 
-![Configuration REPMGR](/images/post/failover-2017/config_REPMGR.png)
+![Configuration REPMGR](https://www.loxodata.com/images/post/failover-2017/config_REPMGR.png)
 
 
 Here is an extract from repmgr.conf&nbsp;:
