@@ -11,18 +11,17 @@ Last time I spoke of pgbench-tools a benchmarking automatization tool.
 Today we are going to see how to make a proper start and give an example.
 Let's dive deeper into this tool !
 
-<!-- ## Déroulement d'une série de tests - étape par étape -->
 ## Unravelling the tests - step by step
 
 
 We are going to take a look at what you can expect with **./runset** which starts a series of tests within a defined "set".
-Everything that follows i scripted.
+Everything that follows is scripted.
 
 
 ### DB Intialisation 
 
 
-The first stop is to create a database, here default `pgbench_` which works the same as&nbsp;:
+The first stop is to create a database, here default `pgbench_` which works the same as:
 
     pgbench -i
 
@@ -40,17 +39,13 @@ Among data collection one can find:
 
  * speed (tps) and total amount of transactions;
  * `latency` (average, maximum and 90th percentile): the 5 worst latency values are displayed on screen for information purpuses;
- * `checkpoints`&nbsp;: le nombre de `checkpoints` effectués pendant le test&nbsp;;
+ * `checkpoints`: le nombre de `checkpoints` effectués pendant le test;
  * the number of checkpoints performed during the test;
  * metrics regarding buffers `buf_check, buf_clean, buf_backend, buf_alloc, max_clean, backend_sync` are all explained [here](https://www.postgresql.org/docs/current/static/monitoring-stats.html#PG-STAT-BGWRITER-VIEW).
 As well as `max_dirty` and `wal_written`.
 
 
 ### Global report
-
-<!--Un fichier `index.html` contenant le rapport général est créé à la racine du dossier avec les graphiques précédemment cités (tps en fonction du nombre de client et du facteur d'échelle).
-Des tableaux comparatifs pour chaque set sont également produits pour simplifier la consultation.
-Pour chaque test de chaque set, un rapport `index.html` est de plus généré avec les graphiques de tps, latence, iostat, meminfo, vmstat dans le dossier `result/numérodutest` (pour observer l'évolution des métriques au cours test).--> 
 
 An `index.html` file is created at the root of the folder. It contains the aformentionned graphs (tps against client number and scaling factor).
 Tables containing detailled results for different sets are produced to simplify reading.
@@ -159,7 +154,7 @@ You may find relevant pieces of information on this [wiki](https://wiki.postgres
 Since rows are produced randomly, their content and structure is of little consequence.
 It is merely a database taken as an example.
 What needs to be understood here, is a given database's size is going to fit differently in cache, memory and disk depending on your hardware.
-On a server with 8G of RAM and 20M cache, here is what one can expect&nbsp;:
+On a server with 8G of RAM and 20M cache, here is what one can expect:
 
 | scale  | matching size | data main location  |
 |--------------------|-----------------------|--------------------------|
@@ -179,18 +174,18 @@ I kept the defaults **SETCLIENTS="1 2 4 8 16 32"**.
 
 #### Type of SQL script
 The type of `sql` script is of much importance as well. 
-Here is a list of what is available in the package&nbsp;:
+Here is a list of what is available in the package:
 
-* __select__&nbsp;: Contains a transaction with a random SELECT on the PK. Perfect for replicas in Read-Only mode&nbsp;;
-* __insert__&nbsp;: INSERT of a random content&nbsp;;
-* __insert-size__&nbsp;: Bulk INSERT with the number of lines as parameter of input&nbsp;;
-* __update__&nbsp;: A single transaction with an UPDATE of random value.
+* __select__;: Contains a transaction with a random SELECT on the PK. Perfect for replicas in Read-Only mode;
+* __insert__ INSERT of a random content&nbsp;;
+* __insert-size__: Bulk INSERT with the number of lines as parameter of input;
+* __update__: A single transaction with an UPDATE of random value.
 
 These last three transactions are fit for a primary which might suffer writes in different contexts.
 
-Now mixed use cases for single clusters&nbsp;:
+Now mixed use cases for single clusters:
 
-* __nobranch__&nbsp;: A transaction with a SELECT, an UPDATE and an INSERT&nbsp;;
+* __nobranch__: A transaction with a SELECT, an UPDATE and an INSERT&nbsp;;
 * __tpc-b__ like: uses the standard [tpc](https://en.wikipedia.org/wiki/Transaction_Processing_Performance_Council) or the source site [tpc-b](http://www.tpc.org/tpcb/default.asp).
 Which consists of 3 UPDATEs, 1 SELECT, 1 INSERT. This is the default and I kept it. It is very broad and  covers much use cases.
 
@@ -200,7 +195,7 @@ In my case, clusters range from few MB to 1,9TB and clients rarely exeed 32.
 Most instances are under the Database Administrators responsibility and are used in mixed case scenario with a single cluster.
 Therefore the choice of keeping much of the defaults makes perfect sense **in MY case**.
 
-## Witch Hunt&nbsp;: Outliers
+## Witch Hunt: Outliers
 
 In order to be rid of the background noise and free from artefacts, tests must be carried out throughout a long enough timeframe (a few minutes if possible). 
 To mitigate this issue, it is also possible to run the same test several times. 
@@ -214,21 +209,21 @@ For my first round of tests, I kept the defaults values that fit my need.
 
 #### Test related parameters
 
-* **SETTIMES=3**&nbsp;: This is the number of times the test is run (in order to mitigate the background noise _e.g._ unexpected checkpoints&nbsp;;
-* **RUNTIME=60**&nbsp;: This is the duration of a single test (option -T). It might be deemed appropriate to extend it according to the frequency of checkpoints. These have a very important effect on writes as well as reads. It is most interresting to have one or more checkpoint during a test.
+* **SETTIMES=3**: This is the number of times the test is run (in order to mitigate the background noise _e.g._ unexpected checkpoints&nbsp;;
+* **RUNTIME=60**: This is the duration of a single test (option -T). It might be deemed appropriate to extend it according to the frequency of checkpoints. These have a very important effect on writes as well as reads. It is most interresting to have one or more checkpoint during a test.
 However performing several times the same test in a non back-to-back cycle tends to alleviate this effect.
 
 For the first part of my test, TOTTRANS (total number of transactions) and SETRATES (target number of tps) were sidelined.
 
 
 #### Disk related parameters
-* **OSDATA=1**&nbsp;: Triggers the data collection of vmstat and iostat
-* **DISKLIST="sda"**&nbsp;: The choice of the device on which statistics are collected
+* **OSDATA=1**: Triggers the data collection of vmstat and iostat
+* **DISKLIST="sda"**: The choice of the device on which statistics are collected
 
 
 #### Miscellaneous parameters
-* **report-latencies**&nbsp;: Average latency per statement 
-* **MAX_WORKERS="auto"**&nbsp;: I strongly advise keeping this one to defaults unless testing parallel query itself
+* **report-latencies**: Average latency per statement 
+* **MAX_WORKERS="auto"**: I strongly advise keeping this one to defaults unless testing parallel query itself
 
 ## VACUUM
 
