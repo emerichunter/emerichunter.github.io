@@ -52,17 +52,18 @@ retry_promote_interval_secs=10
 
 ~~~
 
-Ce qui est donc attendu est&nbsp;:</br>
+Here is what's expected:</br>
 `Downtime` = `master_response_timeout` + `reconnect_attempts`*`reconnect_interval`, </br>
-Soit 5 + 3*5 = 20 secondes de downtime environ pour la base de données.
+Roughly 5 + 3*5 = 20 secondes of downtime for the database.
 
 
-### Le client est roi
+### A man who is his own lawyer...
 
-Une fois la configuration en place, comment faire pour mesurer le temps d'indisponibilité lors d'une panne&nbsp;?
-Comment faire pour que le client se reconnecte au nouveau primaire dès que celui-ci est disponible&nbsp;?
 
-La solution est [la bascule automatique côté client (client failover)](https://wiki.postgresql.org/wiki/New_in_postgres_10#Connection_Failover_and_Routing_in_libpq).
+Once configuration is setup, how can one measure downtime ?
+What needs to be done to reconnect the client to the new primary as soon as it is available ?
+
+The solution is [automatic client failover](https://wiki.postgresql.org/wiki/New_in_postgres_10#Connection_Failover_and_Routing_in_libpq).
 
 Il est uniquement sujet du client car les instances qui forment le cluster sont en version 9.6.
 Il est important de noter qu'il n'est pas nécessaire d'installer PostgreSQL 10 sur toutes les instances pour bénéficier de cette fonctionnalité et qu'il est compatible vers les version d'instance antérieures.
