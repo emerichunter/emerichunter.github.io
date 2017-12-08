@@ -226,55 +226,80 @@ In my case, clusters range from few MB to 1,9TB and clients rarely exeeds 32.
 Most instances are under the Database Administrators responsibility and are used in mixed case scenario with a single cluster.
 Therefore the choice of keeping much of the defaults makes perfect sens **in my case**.
 
-Ces choix doivent donc être faits en fonction du cas pratique qui vous occupe. 
+<!-- Ces choix doivent donc être faits en fonction du cas pratique qui vous occupe. 
 Il faut prendre en compte la taille de votre base de données, le nombre de connexions simultanées ainsi que le type d'architecture que vous employez en production.
 Dans mon cas, les instances sont de tailles allant de quelques Mo à 1,5To et le nombre de client doit rarement dépasser 32.
 La plupart des instances sous la responsabilite du pôle SGBD dont je fais partie sont à instance unique en utilisation mixte.
-Le choix de conserver les valeurs par défaut a donc tout son sens dans mon cas.
+Le choix de conserver les valeurs par défaut a donc tout son sens dans mon cas.-->
 
-## Un mot sur les valeurs aberrantes
+## A word about outliers
 
-Nous cherchons avant tout à lisser le bruit de fond, à obtenir des mesures exemptes de parasites.
+In order to be rid of the background noise, free from artefacts, tests must be carried out throughout a timeframe long enough (a few minutes if possible). 
+To mitigate this issue, it is also possible to run the same test several times. 
+This way one can get an average value.
+
+By seperating the outliers, one can obtain average values that represents a behaviour we might call "normal". If a test fails it is advised to delete it.
+
+<!-- Nous cherchons avant tout à lisser le bruit de fond, à obtenir des mesures exemptes de parasites.
 Dans ce but, les tests doivent être assez longs (plusieurs minutes si possible).
 Pour pallier ce problème, ou en diminuer d'avantage l'importance, il est également possible de reconduire le même test plusieurs fois. Ceci permet donc de faire une moyenne.
 
-En séparant les valeurs aberrantes, on obtient des moyennes plus représentative du comportement dit normal. Si un test est en erreur (problème lors du bench), il est alors conseillé de le supprimer.
+En séparant les valeurs aberrantes, on obtient des moyennes plus représentative du comportement dit normal. Si un test est en erreur (problème lors du bench), il est alors conseillé de le supprimer.-->
 
-### Paramètres utilisés
-Pour les premiers tests, j'ai conservé les valeurs par défaut du fichier qui sont assez bien pensées.
-#### Paramètres relatifs aux tests
-* **SETTIMES=3**&nbsp;: il s'agit du nombre de fois ou le test est reproduit (ceci permet de lisser le bruit de fond e.g. les checkpoints inopinés)&nbsp;;
-* **RUNTIME=60**&nbsp;: c'est la durée d'un test individuel (option -T). Il peut convenir de l'allonger en fonction de la fréquence des checkpoints.
-Ceux-ci ont un impact important en écriture (mais aussi en lecture). Il est intéressant d'inclure un ou plusieurs checkpoints dans un bench.
-Cependant, le fait de réaliser plusieurs fois le même test de façon cyclique et non consécutive à pour effet de gommer cette importance.
 
-Je n'ai pas utilisé les paramètres TOTTRANS (nombre total de transactions) et SETRATES (taux de transaction par seconde cible qui est déclaré) pour la première partie de mes tests.
+### Parameters used
 
-#### Paramètres relatifs aux disques
-* **OSDATA=1**&nbsp;: Enclenche la collection des données issues de vmstat et iostat
-* **DISKLIST="sda"**&nbsp;: Le choix du disque sur lequel les statistiques sont collectées
+For my first round of tests, I kept the defaults values that fit my need?
 
-#### Autres paramètres
-* **report-latencies**&nbsp;: Latence moyenne par déclaration (statement)
-* **MAX_WORKERS="auto"**&nbsp;: je conseille de laisser ce paramètre par défaut à moins de bencher la parallèlisation (-j)
+#### Test related parameters
+
+* **SETTIMES=3**&nbsp;: This is the number of times the test is run (in order to mitigaite the background noise _e.g._ unexpected checkpoints&nbsp;;
+* **RUNTIME=60**&nbsp;: This is the duration of a single test (option -T). It might be deemed appropriate to extend it according to the frequency of checkpoints. These have a very important effect on writes as well as reads. It is most interresting to have one or more checkpoint during a test.
+However the performing several times the same test in a non back-to-back cycle tends to alleviate this effect.
+
+For the first part of my test, TOTTRANS (total number of transactions) and SETRATES (target number of tps) were sidelined.
+
+
+#### Disk related parameters
+* **OSDATA=1**&nbsp;: Triggers the data collection of vmstat and iostat
+* **DISKLIST="sda"**&nbsp;: The choice of the device on which statistics are collected
+
+
+#### Miscellaneous parameters
+* **report-latencies**&nbsp;: Average latency per statement 
+* **MAX_WORKERS="auto"**&nbsp;: I strongly advise keeping this one to defaults unless testing parallel query itself
 
 ## VACUUM
 
-En faisant un rapide calcul, on constate que 4 facteurs d'échelles pour les données (**1, 10, 100, 1000**), 6 échelles différentes pour les clients (**1, 2, 4, 8, 16, 32**), lancées 3 fois (**SETTIMES=3**) 
+Quick calculation will give you 4 scales (**1, 10, 100, 1000**), 6 values for clients (**1, 2, 4, 8, 16, 32**) and 3 test for each combination (**SETTIMES=3**) during 1 minute. 
+The total is therefore 4*6*3=72 tests of 1 minute. 
+Initial loading of the database not taken into account.
+
+Following the MVCC (management of multiple versions of a single tuple resulting of delete and update), all the transaction are going to leave dead tuples.
+Moreover, when many rows are updated (or deleted), it is necessary update the statistics as well to insure the planner always takes the best plan for every query.
+
+To avoid autovacuum in between tests and slowing of performance, a `VACUUM ANAYZE` is performed if no vacuum has been done in last 10 seconds of cleanup phase of the code during the last test.
+
+It is an approximation of course, but the downside is having to many VACUUM instead of to little. 
+It is a sensible argument for anyone careful about regular VACUUM.
+
+<!-- En faisant un rapide calcul, on constate que 4 facteurs d'échelles pour les données (**1, 10, 100, 1000**), 6 échelles différentes pour les clients (**1, 2, 4, 8, 16, 32**), lancées 3 fois (**SETTIMES=3**) 
 pour chaque couple de paramètre pendant 1 minute nous donne un set total de&nbsp;:
-4*6*3= 72 tests d'une minute. Ceci ne tenant évidemment pas compte du chargement de la base.
+4*6*3= 72 tests d'une minute. Ceci ne tenant évidemment pas compte du chargement de la base. -->
 
-Suite à la gestion des différentes versions d'une ligne (MVCC), une transaction commitée laisse des lignes mortes. 
-De plus, lorsqu'un grand nombre de données est modifié, il est nécessaire de mettre à jour les statistiques pour s'assurer que l'optimiseur prend toujours le meilleur chemin pour effectuer la requête.
+<!-- Suite à la gestion des différentes versions d'une ligne (MVCC), une transaction commitée laisse des lignes mortes. 
+De plus, lorsqu'un grand nombre de données est modifié, il est nécessaire de mettre à jour les statistiques pour s'assurer que l'optimiseur prend toujours le meilleur chemin pour effectuer la requête. -->
 
-Pour éviter qu'un autovacuum lié aux modifications du test précédant ne viennent ralentir le test actuel, un `vacuum analyze` est lancé si aucun vacuum n'a été réalisé pendant les 10 dernières secondes du dernier test lors de la phase "cleanup" du code.
+<!-- Pour éviter qu'un autovacuum lié aux modifications du test précédant ne viennent ralentir le test actuel, un `vacuum analyze` est lancé si aucun vacuum n'a été réalisé pendant les 10 dernières secondes du dernier test lors de la phase "cleanup" du code. -->
 
-Il s'agit ici d'une approximation, mais le revers est d'avoir trop de VACUUM plutôt que pas assez.
-C'est un argument valide si on est habituellement vigilant sur les VACUUM réguliers.
+<!-- Il s'agit ici d'une approximation, mais le revers est d'avoir trop de VACUUM plutôt que pas assez.
+C'est un argument valide si on est habituellement vigilant sur les VACUUM réguliers.-->
 
 
 ## Conclusion
 
+Vacuum, reproducibility, serialization and OS/DB statistics turn pgbench-tools into an extraordinary wrapper of pgbench.
+It is possible to find relevant tests for many different use cases according to the type of test, the size of the dataset, the number of clients among other things (remaining as approximation of course).
 Le vacuum, la reproductibilité, la sérialisation et les statistiques font de pgbench-tools une surcouche d'industrialisation de pgbench déjà extraordinaire.
 Il est possible de trouver les tests pertinents pour de nombreux cas pratiques (ceux-ci restent des approximations bien sûr) en fonction du type de test, du volume de données, du nombre de connexions concurrentes entre autres choses.
 
