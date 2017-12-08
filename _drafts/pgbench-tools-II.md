@@ -36,16 +36,12 @@ A second loop is performed within if the file contains several values for scales
 
 ### Data collection
 
-Les données collectées comportent entre autres&nbsp;:
-Amongst data collection one can find:
+Among data collection one can find:
 
- <!--* `transactions`&nbsp;: la vitesse (`tps`) et le nombre total de transactions&nbsp;;-->
  * speed (tps) and total amount of transactions;
- * `latence` (moyenne, maximum et neuvième décile)&nbsp;: les 5 plus mauvais temps de latence sont affichées à l'écran pour information&nbsp;;
  * `latency` (average, maximum and 90th percentile): the 5 worst latency values are displayed on screen for information purpuses;
  * `checkpoints`&nbsp;: le nombre de `checkpoints` effectués pendant le test&nbsp;;
  * the number of checkpoints performed during the test;
- * `buffers`&nbsp;: les métriques `buf_check, buf_clean, buf_backend, buf_alloc, max_clean, backend_sync` sont expliquées [ici](https://www.postgresql.org/docs/current/static/monitoring-stats.html#PG-STAT-BGWRITER-VIEW).
  * metrics regarding buffers `buf_check, buf_clean, buf_backend, buf_alloc, max_clean, backend_sync` are all explained [here](https://www.postgresql.org/docs/current/static/monitoring-stats.html#PG-STAT-BGWRITER-VIEW).
 As well as `max_dirty` and `wal_written`.
 
@@ -54,14 +50,14 @@ As well as `max_dirty` and `wal_written`.
 
 <!--Un fichier `index.html` contenant le rapport général est créé à la racine du dossier avec les graphiques précédemment cités (tps en fonction du nombre de client et du facteur d'échelle).
 Des tableaux comparatifs pour chaque set sont également produits pour simplifier la consultation.
-Pour chaque test de chaque set, un rapport `index.html` est de plus généré avec les graphiques de tps, latence, iostat, meminfo, vmstat dans le dossier `result/numérodutest` (pour observer l'évolution des métriques au cours test).
-An `index.html` file is created at the root of the folder. It contains the aformentionned graphs (tps against client number and scaling factor).-->
-Tables containing detailled results for different products to simplify reading.
+Pour chaque test de chaque set, un rapport `index.html` est de plus généré avec les graphiques de tps, latence, iostat, meminfo, vmstat dans le dossier `result/numérodutest` (pour observer l'évolution des métriques au cours test).--> 
+
+An `index.html` file is created at the root of the folder. It contains the aformentionned graphs (tps against client number and scaling factor).
+Tables containing detailled results for different sets are produced to simplify reading.
 For each test of each set, another report also named `index.html` is generated with graphs of tps, latency, iostat, meminfo and vmstat in a sub-folder `result/numberofset` which can give very extended information regarding the behaviour of server during the test.
 
 ### Example
 
-<!--Voici ce qu'il se passe lorsqu'on lance la commande `runset`.-->
 Here is what to expect in your shell after firing  `runset`:
 ~~~
 
@@ -122,7 +118,7 @@ Worst latency results:
 
 
 Last time I wrote about the __set report__, but this time I will focus on the __test report__.
-Collected data are stored, sorted and grouped by set and by test, in the aformentionned database which is chosen un the config file (defaults to `results`).
+Collected data are stored, sorted and grouped not only by set but also by test, in the aformentionned database which is declared in the config file (defaults `results`).
 
 
 <!--Je vous avais déjà parlé dans l'article précédent du contenu du __rapport de set__, je vais détailler un peu plus ici le contenu du __rapport de test__.
