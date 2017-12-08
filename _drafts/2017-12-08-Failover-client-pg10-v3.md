@@ -65,7 +65,8 @@ What needs to be done to reconnect the client to the new primary as soon as it i
 
 The solution is [automatic client failover](https://wiki.postgresql.org/wiki/New_in_postgres_10#Connection_Failover_and_Routing_in_libpq).
 
-Il est uniquement sujet du client car les instances qui forment le cluster sont en version 9.6.
+This is entirely about the client. The clusters are all in version 9.6.
+It is important to notice that in order to benefit of this feature it is not necessary to install PG10 on the clusters.
 Il est important de noter qu'il n'est pas nécessaire d'installer PostgreSQL 10 sur toutes les instances pour bénéficier de cette fonctionnalité et qu'il est compatible vers les version d'instance antérieures.
 
 Le client va tout simplement chercher le premier nœud accessible.
