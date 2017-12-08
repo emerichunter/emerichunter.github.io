@@ -87,8 +87,7 @@ Here for writes failover of course we need to set up a connection string pointin
 
 **Practical matter**
 
-Here is a short extrat from the script I wrote we these information (and 
-Voici un petit extrait du script que j'ai écrit en suivant les indications données (et en tâtonnant un peu) et qui vous aiguillera encore d'avantage sur la façon de procéder&nbsp;:
+Here is a short extract from the script I wrote we these informations (and fumbling with it a little) you will get a better grasp of the way to proceed:
 
 ~~~
 
