@@ -218,7 +218,13 @@ Remains mixed use cases for single clusters&nbsp;:
 
 * __nobranch__&nbsp;: A transaction with a SELECT, an UPDATE and an INSERT&nbsp;;
 * __tpc-b__ like: uses the standard [tpc](https://en.wikipedia.org/wiki/Transaction_Processing_Performance_Council) or the source site [tpc-b](http://www.tpc.org/tpcb/default.asp).
-Qui consiste en 3 updates, 1 select, 1 insert. C'est le paramètre par défaut que j'ai choisi. Il est générique et permet de couvrir une large palette de cas d'utilisation.
+Which consists of 3 UPDATEs, 1 SELECT, 1 INSERT. This is the default and I kept it. It is very broad and  covers much use cases.
+
+This choice is paramount and must be chosen carefully having in mind which one is relevant to you.
+Size of database must be taken into account, concurrent client connexions, architecture.
+In my case, clusters range from few MB to 1,9TB and clients rarely exeeds 32.
+Most instances are under the Database Administrators responsibility and are used in mixed case scenario with a single cluster.
+Therefore the choice of keeping much of the defaults makes perfect sens **in my case**.
 
 Ces choix doivent donc être faits en fonction du cas pratique qui vous occupe. 
 Il faut prendre en compte la taille de votre base de données, le nombre de connexions simultanées ainsi que le type d'architecture que vous employez en production.
