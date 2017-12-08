@@ -73,20 +73,9 @@ The client is only looking for the first node available.
 **READ-WRITE**: It will pick the first writable node (primary).
 
 Implications are important, with a solution to automatically failover connections, it is not longer necessary to rewrite the connection string manually.
-The client 
-Les implications sont importantes, avec une solution de bascule des connexions, il n'est plus nécessaire de réécrire manuellement la chaîne de connexion vers la nouvelle instance.
-Le client va donc servir à la reconnexion automatique et permettre la mesure d'indisponibilité.
+The client is going to regain a connection and be instrumental in the measurement of downtime.
 
-<!-- SAS&nbsp;: Je suis perdu. On parle de la fonctionnalité PG10 en intro. Puis de REPMAGR qui est la
-super solution, pour dire qu'un collègue propose la fonctionnalité. Mais laquelle ? Repmgr, la
-bascule PG10 ? -->
-
-<!-- LAV: idem que SAS, si tu réécris le premier paragraphe comme je le suggère,
-il suffit donc que tu expliques en quoi consiste la nouvelle fonctionnalité dans
-ce paragraphe. Il pourrait même être intéressant d'inverser l'ordre de ces 2
-paragraphes-->
-
-#### Comment configurer la chaîne de connexion&nbsp;?
+#### Figuring how to setup the connection string properly
 
 Une petite lecture de ce [post](http://paquier.xyz/postgresql-2/postgres-10-libpq-read-write/) et de [celui-ci](http://paquier.xyz/postgresql-2/postgres-10-multi-host-connstr/) nous permet d'avoir une idée sur la façon de procéder.
 En substance&nbsp;:
