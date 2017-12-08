@@ -69,17 +69,18 @@ This is entirely about the client. The clusters are all in version 9.6.
 It is important to notice that in order to benefit from this feature it is not necessary to install PG10 on the clusters, older versions will do just fine
 
 The client is only looking for the first node available.
-**READ-ONLY**: It will pick any node (primary or secondary).
-**READ-WRITE**: It will pick the first writable node (primary).
+**READ-ONLY** (RO): It will pick any node (primary or secondary).
+**READ-WRITE** (RW): It will pick the first writable node (primary).
 
 Implications are important, with a solution to automatically failover connections, it is not longer necessary to rewrite the connection string manually.
 The client is going to regain a connection and be instrumental in the measurement of downtime.
 
 #### Figuring how to setup the connection string properly
 
-Une petite lecture de ce [post](http://paquier.xyz/postgresql-2/postgres-10-libpq-read-write/) et de [celui-ci](http://paquier.xyz/postgresql-2/postgres-10-multi-host-connstr/) nous permet d'avoir une idée sur la façon de procéder.
-En substance&nbsp;:
+Let us do a little  bit of reading [here](http://paquier.xyz/postgresql-2/postgres-10-libpq-read-write/) and [there](http://paquier.xyz/postgresql-2/postgres-10-multi-host-connstr/). This will allow us to get a pretty good idea on how to proceed.
+Essentially:
 
+* We need to indicate wether we need to connect on a primary (RW) or on a any cluster (RO)
 * Il faut préciser dans la chaîne de connexion si l'on souhaite se connecter à une instance en lecture-écriture (primaire) ou
 une instance sans distinction lecture seule ou lecture-écriture (indifféremment standby ou primaire).
 <!-- SAS&nbsp;: pas clair du tout. Que veut-on mesurer ? -->
