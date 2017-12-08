@@ -127,7 +127,7 @@ Here is a sneak peak of graphs taken randomly.
 <table style="border: 0px;">
   <tr>
     <td style="border: 0px;"> <img src="https://www.loxodata.com//images/post/pgbench-tools-2017/tps.png" alt="tps.png : profil des tps au cours du test" style="width: 500px; border: 0px;"/></td>
-    <td style="border: 0px;"> <img src="https://www.loxodata.com/https://www.loxodata.com//images/post/pgbench-tools-2017/latency.png" alt="latency.png latence au 9e decile" style="width: 500px; border: 0px;"/></td>  
+    <td style="border: 0px;"> <img src="https://www.loxodata.com//images/post/pgbench-tools-2017/latency.png" alt="latency.png latence au 9e decile" style="width: 500px; border: 0px;"/></td>  
   </tr>
   <tr>
     <td style="border: 0px;"> <img src="https://www.loxodata.com//images/post/pgbench-tools-2017/iostat-writeMB.png" alt="iostat-writeMB.png" style="width: 500px; border: 0px;"/></td>  
