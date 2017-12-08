@@ -153,20 +153,14 @@ Here is a sneak peak of graphs taken randomly.
 
 You may find relevant pieces of information on this [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting) to help you further your insight on theoretical aspects of scales.
 
-<!--Vous trouverez des informations qui permettent d'appréhender la partie théorique sur le facteur d'échelle sur ce [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting).-->
 
 #### SCALE 
 
-Since rows are produced randomly, their content and structure is of little consequence because it is merely database taken as an example.
-What needs to be understood here, is the size which is going to be taken at different scales is going to fit differently in cache, memory and disk.
-On a server with 8G of RAM and 20M cache, here is what one can expect :
+Since rows are produced randomly, their content and structure is of little consequence.
+It is merely a database taken as an example.
+What needs to be understood here, is a given database's size is going to fit differently in cache, memory and disk depending on your hardware.
+On a server with 8G of RAM and 20M cache, here is what one can expect&nbsp;:
 
-<!-- Les lignes étant produites aléatoirement, leur contenu et leur structure n'ont ici pas ou peu d'importance car il s'agit d'une base témoin.
-Ce qu'il faut retenir c'est la taille que va occuper la base aux différentes échelles.
-Sur une machine avec 8Go de RAM et 20Mo de cache voici comment la base de données peut être répartie (globalement)&nbsp;:
-Sur une machine avec 8Go de RAM et 20Mo de cache voici comment la base de données peut être répartie (globalement)&nbsp;: -->
-
-| facteur d'échelle  | taille correspondante | répartition des données  |
 | scale  | matching size | data main location  |
 |--------------------|-----------------------|--------------------------|
 | 1 |  15Mo | **shared_buffers** |
@@ -184,7 +178,8 @@ I kept the defaults **SETCLIENTS="1 2 4 8 16 32"**.
 
 
 #### Type of SQL script
-The type of `sql` script also of much importance. Here is a list of what is available in the package&nbsp;:
+The type of `sql` script is of much importance as well. 
+Here is a list of what is available in the package&nbsp;:
 
 * __select__&nbsp;: Contains a transaction with a random SELECT on the PK. Perfect for replicas in Read-Only mode&nbsp;;
 * __insert__&nbsp;: INSERT of a random content&nbsp;;
