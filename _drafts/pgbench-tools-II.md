@@ -121,48 +121,37 @@ Last time I wrote about the __set report__, but this time I will focus on the __
 Collected data are stored, sorted and grouped not only by set but also by test, in the aformentionned database which is declared in the config file (defaults `results`).
 
 
-<!--Je vous avais déjà parlé dans l'article précédent du contenu du __rapport de set__, je vais détailler un peu plus ici le contenu du __rapport de test__.
-Les donneés collectées sont stockées, ordonnées et groupées par set et par test, dans la base déclarée dans le fichier de configuration (par défaut `results`).-->
-
-
 One can find a subfolder named after each test's number in the main folder `pgbench-tools/results`. 
-One can easily copy these without having to make any dump from de database itself.
-
-<!--On peut retrouver dans le dossier `pgbench-tools/results` un dossier pour chaque test dont le nom est le numéro du test et qui comporte ces mêmes informations.
-Cela permet de copier facilement les résultats de bench sans extraction supplémentaire.-->
+It follows that one can easily copy these without having to make any dump from de database itself.
 
 At last, metrics such as `vmstat`, `iostat` and `meminfo` are collected into logfile in this very same folder.
 One can also find graphs showing the behaviour of tps, latency, CPU, memory, buffers and much more for each test.
 We will come back to this matter and go into more details latter on.
-Here is a sneak peak of graphs taken randomly.
 
-<!-- Enfin, la collecte des métriques `vmstat`, `iostat` et `meminfo` est ajoutée sous forme de fichiers logs dans ce même répertoire.
-On y trouve également des graphiques montrant l'évolution au cours du temps lors du test&nbsp;:  tps, latence, cpu, mémoire, buffers...
-Nous reviendrons avec encore davantage de détail sur ce sujet ultérieurement.
-Voici un aperçu des graphiques pour un test pris au hasard.-->
+Here is a sneak peak of graphs taken randomly.
 
 <table style="border: 0px;">
   <tr>
-    <td style="border: 0px;"> <img src="/images/post/pgbench-tools-2017/tps.png" alt="tps.png : profil des tps au cours du test" style="width: 500px; border: 0px;"/></td>
-    <td style="border: 0px;"> <img src="/images/post/pgbench-tools-2017/latency.png" alt="latency.png latence au 9e decile" style="width: 500px; border: 0px;"/></td>  
+    <td style="border: 0px;"> <img src="https://www.loxodata.com//images/post/pgbench-tools-2017/tps.png" alt="tps.png : profil des tps au cours du test" style="width: 500px; border: 0px;"/></td>
+    <td style="border: 0px;"> <img src="https://www.loxodata.com/https://www.loxodata.com//images/post/pgbench-tools-2017/latency.png" alt="latency.png latence au 9e decile" style="width: 500px; border: 0px;"/></td>  
   </tr>
   <tr>
-    <td style="border: 0px;"> <img src="/images/post/pgbench-tools-2017/iostat-writeMB.png" alt="iostat-writeMB.png" style="width: 500px; border: 0px;"/></td>  
-    <td style="border: 0px;"> <img src="/images/post/pgbench-tools-2017/iostat-util.png" alt="iostat-util.png" style="width: 500px; border: 0px;"/></td>
+    <td style="border: 0px;"> <img src="https://www.loxodata.com//images/post/pgbench-tools-2017/iostat-writeMB.png" alt="iostat-writeMB.png" style="width: 500px; border: 0px;"/></td>  
+    <td style="border: 0px;"> <img src="https://www.loxodata.com//images/post/pgbench-tools-2017/iostat-util.png" alt="iostat-util.png" style="width: 500px; border: 0px;"/></td>
   </tr>
   <tr>
-    <td style="border: 0px;"> <img src="/images/post/pgbench-tools-2017/vmstat.png" alt="vmstat.png" style="width: 500px; border: 0px;"/></td>  
-    <td style="border: 0px;"> <img src="/images/post/pgbench-tools-2017/dirty.png" alt="dirty.png :  buffers sales " style="width: 500px; border: 0px;"/></td>
+    <td style="border: 0px;"> <img src="https://www.loxodata.com//images/post/pgbench-tools-2017/vmstat.png" alt="vmstat.png" style="width: 500px; border: 0px;"/></td>  
+    <td style="border: 0px;"> <img src="https://www.loxodata.com//images/post/pgbench-tools-2017/dirty.png" alt="dirty.png :  buffers sales " style="width: 500px; border: 0px;"/></td>
   </tr>
 </table>
 
 
-## Parameters in details
+## The Devil is in the details
 
 
 ### Foreword on scale, clients and the scripts used
 
-You may find relevant information to help you further on theoretical aspect of scale on this [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting).
+You may find relevant pieces of information on this [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting) to help you further your insight on theoretical aspects of scales.
 
 <!--Vous trouverez des informations qui permettent d'appréhender la partie théorique sur le facteur d'échelle sur ce [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting).-->
 
