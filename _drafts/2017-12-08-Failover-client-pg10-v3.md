@@ -66,13 +66,14 @@ What needs to be done to reconnect the client to the new primary as soon as it i
 The solution is [automatic client failover](https://wiki.postgresql.org/wiki/New_in_postgres_10#Connection_Failover_and_Routing_in_libpq).
 
 This is entirely about the client. The clusters are all in version 9.6.
-It is important to notice that in order to benefit of this feature it is not necessary to install PG10 on the clusters.
-Il est important de noter qu'il n'est pas nécessaire d'installer PostgreSQL 10 sur toutes les instances pour bénéficier de cette fonctionnalité et qu'il est compatible vers les version d'instance antérieures.
+It is important to notice that in order to benefit from this feature it is not necessary to install PG10 on the clusters, older versions will do just fine
 
-Le client va tout simplement chercher le premier nœud accessible.
-**Lecture seule**&nbsp;: le premier nœud disponible sera choisi (primaire ou secondaire).
-**Lecture-écriture**&nbsp;: le client cherche le premier nœud ouvert aux écritures (primaire).
+The client is only looking for the first node available.
+**READ-ONLY**: It will pick any node (primary or secondary).
+**READ-WRITE**: It will pick the first writable node (primary).
 
+Implications are important, with a solution to automatically failover connections, it is not longer necessary to rewrite the connection string manually.
+The client 
 Les implications sont importantes, avec une solution de bascule des connexions, il n'est plus nécessaire de réécrire manuellement la chaîne de connexion vers la nouvelle instance.
 Le client va donc servir à la reconnexion automatique et permettre la mesure d'indisponibilité.
 
@@ -284,4 +285,3 @@ Il est possible d'augmenter la fréquence d'échantillonnage de notre mesure. Ce
 Ce qui aurait impacté les performances du serveur et de l'instance (imaginez une mesure toute les nanosecondes avec nanosleep&nbsp;: on atteindrait alors le milliard de tps&nbsp;!).
 Avec une mesure toute les 10ms, nous avons alors 100 tps seulement pour le traçage des écritures.
 Ce qui en soit correspond à un système avec une charge tout à fait honorable (environ 8 millions d'écritures par jour).
-
