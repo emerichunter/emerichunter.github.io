@@ -143,7 +143,7 @@ Here is a sneak peak of graphs taken randomly.
 ## The Devil is in the details
 
 
-### Foreword on scale, clients and the scripts used
+### Foreword on scale, clients and the scripts used and abused
 
 You may find relevant pieces of information on this [wiki](https://wiki.postgresql.org/wiki/Pgbenchtesting) to help you further your insight on theoretical aspects of scales.
 
