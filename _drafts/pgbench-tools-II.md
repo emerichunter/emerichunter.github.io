@@ -232,48 +232,25 @@ For the first part of my test, TOTTRANS (total number of transactions) and SETRA
 
 ## VACUUM
 
-Quick calculation will give you 4 scales (**1, 10, 100, 1000**), 6 values for clients (**1, 2, 4, 8, 16, 32**) and 3 test for each combination (**SETTIMES=3**) during 1 minute. 
+Quick calculation will give you 4 scales (**1, 10, 100, 1000**) 6 values for clients (**1, 2, 4, 8, 16, 32**) and 3 test for each combination (**SETTIMES=3**) during 1 minute. 
 The total is therefore 4*6*3=72 tests of 1 minute. 
-Initial loading of the database not taken into account.
+Initial loading of the database is not taken into account.
 
-Following the MVCC (management of multiple versions of a single tuple resulting of delete and update), all the transaction are going to leave dead tuples.
-Moreover, when many rows are updated (or deleted), it is necessary update the statistics as well to insure the planner always takes the best plan for every query.
+Following the MVCC (management of multiple versions of a single tuple resulting of deletes and updates), all the transactions are going to leave dead tuples.
+Moreover, when many rows are updated (or deleted), it is also necessary to update the statistics to insure the planner always takes the best plan for every query.
 
-To avoid autovacuum in between tests and slowing of performance, a `VACUUM ANAYZE` is performed if no vacuum has been done in last 10 seconds of cleanup phase of the code during the last test.
+To avoid `autovacuum` in between tests and slowing of performance, a `VACUUM ANALYZE` is performed if no vacuum has been done in last 10 seconds of cleanup phase of the code during the last test.
 
 It is an approximation of course, but the downside is having to many VACUUM instead of to little. 
-It is a sensible argument for anyone careful about regular VACUUM.
-
-<!-- En faisant un rapide calcul, on constate que 4 facteurs d'échelles pour les données (**1, 10, 100, 1000**), 6 échelles différentes pour les clients (**1, 2, 4, 8, 16, 32**), lancées 3 fois (**SETTIMES=3**) 
-pour chaque couple de paramètre pendant 1 minute nous donne un set total de&nbsp;:
-4*6*3= 72 tests d'une minute. Ceci ne tenant évidemment pas compte du chargement de la base. -->
-
-<!-- Suite à la gestion des différentes versions d'une ligne (MVCC), une transaction commitée laisse des lignes mortes. 
-De plus, lorsqu'un grand nombre de données est modifié, il est nécessaire de mettre à jour les statistiques pour s'assurer que l'optimiseur prend toujours le meilleur chemin pour effectuer la requête. -->
-
-<!-- Pour éviter qu'un autovacuum lié aux modifications du test précédant ne viennent ralentir le test actuel, un `vacuum analyze` est lancé si aucun vacuum n'a été réalisé pendant les 10 dernières secondes du dernier test lors de la phase "cleanup" du code. -->
-
-<!-- Il s'agit ici d'une approximation, mais le revers est d'avoir trop de VACUUM plutôt que pas assez.
-C'est un argument valide si on est habituellement vigilant sur les VACUUM réguliers.-->
-
+It is a sensible argument for anyone careful about regular VACUUMs.
 
 ## Conclusion
 
-Vacuum, reproducibility, serialization and OS/DB statistics turn pgbench-tools into an extraordinary wrapper of pgbench.
-It is possible to find relevant tests for many different use cases according to the type of test, the size of the dataset, the number of clients among other things (remaining as approximation of course).
-
-<!-- Le vacuum, la reproductibilité, la sérialisation et les statistiques font de pgbench-tools une surcouche d'industrialisation de pgbench déjà extraordinaire.
-Il est possible de trouver les tests pertinents pour de nombreux cas pratiques (ceux-ci restent des approximations bien sûr) en fonction du type de test, du volume de données, du nombre de connexions concurrentes entre autres choses.-->
+Vacuum, reproducibility, serialization and OS/DB statistics turn `pgbench-tools` into an extraordinary wrapper of pgbench.
+It is possible to find relevant scripts for many different use cases according to the type of test, the size of the dataset, the number of clients among other things (remaining a good approximation, of course).
 
 However this tool has some limitations which we are going to explore in a next - _more practical_ - article with a complete series of test and a context set in the real world with its own constraints.
 I will also speak about many other aspects : interpretation of the results, the strategy underneath, and how to reach a (relatively) definitive conclusion.
 I will count the changes, improvements, corrections and new features on this project and they are numerous.
 
 Until next time, keep benching guys !
-
-<!-- Cependant, cet outil comporte des limitations que nous allons aborder dans un prochain article plus concret avec une série de test complète et un cadre de départ avec ses propres contraintes lié au contexte.
-J'aborderai également de nombreux aspects : interprétation des données statistiques, comment diriger une campagne de test, comment faire converger les résultats obtenus vers une conclusion.
-Je passerai aussi en revue les changements, améliorations, corrections et ajouts qu'il m'a été donné de contribuer sur ce projet et ils sont nombreux.-->
-
-
-<!-- Just bench it !-->
