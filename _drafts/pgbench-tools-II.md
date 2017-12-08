@@ -217,7 +217,7 @@ These last three transactions are fit for a primary which might suffers writes i
 Remains mixed use cases for single clusters&nbsp;:
 
 * __nobranch__&nbsp;: A transaction with a SELECT, an UPDATE and an INSERT&nbsp;;
-* __tpc-b__ like: caractéristique des transactions [tpc](https://en.wikipedia.org/wiki/Transaction_Processing_Performance_Council) ou sur le site original [tpc-b](http://www.tpc.org/tpcb/default.asp).
+* __tpc-b__ like: uses the standard [tpc](https://en.wikipedia.org/wiki/Transaction_Processing_Performance_Council) or the source site [tpc-b](http://www.tpc.org/tpcb/default.asp).
 Qui consiste en 3 updates, 1 select, 1 insert. C'est le paramètre par défaut que j'ai choisi. Il est générique et permet de couvrir une large palette de cas d'utilisation.
 
 Ces choix doivent donc être faits en fonction du cas pratique qui vous occupe. 
