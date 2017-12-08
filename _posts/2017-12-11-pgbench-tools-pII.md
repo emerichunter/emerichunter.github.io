@@ -194,7 +194,7 @@ In my case, clusters range from few MB to 1,9TB and clients rarely exeed 32.
 Most instances are under the Database Administrators responsibility and are used in mixed case scenario with a single cluster.
 Therefore the choice of keeping much of the defaults makes perfect sense **in MY case**.
 
-## Witch Hunt: Outliers
+## Witch Hunt: The Outliers
 
 In order to be rid of the background noise and free from artefacts, tests must be carried out throughout a long enough timeframe (a few minutes if possible). 
 To mitigate this issue, it is also possible to run the same test several times. 
