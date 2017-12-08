@@ -80,22 +80,14 @@ The client is going to regain a connection and be instrumental in the measuremen
 Let us do a little  bit of reading [here](http://paquier.xyz/postgresql-2/postgres-10-libpq-read-write/) and [there](http://paquier.xyz/postgresql-2/postgres-10-multi-host-connstr/). This will allow us to get a pretty good idea on how to proceed.
 Essentially:
 
-* We need to indicate wether we need to connect on a primary (RW) or on a any cluster (RO)
-* Il faut préciser dans la chaîne de connexion si l'on souhaite se connecter à une instance en lecture-écriture (primaire) ou
-une instance sans distinction lecture seule ou lecture-écriture (indifféremment standby ou primaire).
-<!-- SAS&nbsp;: pas clair du tout. Que veut-on mesurer ? -->
-En l'occurrence, pour un failover des écritures, il me faut retrouver une connexion sur un primaire acceptant les écritures.
+* We need to indicate wether we need to connect on a primary (RW) or on a any cluster standby or primary (RO).
+Here for writes failover of course we need to set up a connection string pointing to a primary server.
 
-* Mais ce n'est pas tout, il faut inclure la liste des nœuds qui composent notre configuration, avec les ports.
+* But that's not all, we have to specify a list with all the nodes of our configuration with the ports (all the more if they are different from one another).
 
-<!-- /SAS -->
+**Practical matter**
 
-<!-- LAV: sur le paragraphe comment, tu dois vraiment expliquer le comment. Là,
-ça donne l'impression que tu renvoies sur un autre blog pour l'explication...
-Alors que ce n'est pas le cas parce que tu donnes un exemple pratique en dessous!-->
-
-**Cas pratique**
-
+Here is a short extrat from the script I wrote we these information (and 
 Voici un petit extrait du script que j'ai écrit en suivant les indications données (et en tâtonnant un peu) et qui vous aiguillera encore d'avantage sur la façon de procéder&nbsp;:
 
 ~~~
