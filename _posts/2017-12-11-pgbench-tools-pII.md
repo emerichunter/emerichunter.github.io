@@ -4,6 +4,9 @@ Title: Pgbench-tools part II - Going further
 published: true
 ---
       
+# GOING FURTHER
+
+
 This is a translation from french. You can find the original post [here](http://www.loxodata.com/post/benchmarking-pratique2/)
 
 Last time I spoke of pgbench-tools a benchmarking automatization tool.
