@@ -108,21 +108,17 @@ CONNINFO="postgresql://"$HOST_1":"$","$HOST_2":"$PORT_2","$HOST_3":"$PORT_3"/"$M
 
 ~~~
 
-Une fois la reconnexion établie, je vais pouvoir mesurer le temps d'indisponibilité total et quantifier en terme de temps les écritures perdues pendant l'opération de failover.
+Once connection has been restored, I will be able to establish length of downtime and quantify how much writes have been lost during failover.
 
+#### Quantum Leap: How to measure it?
 
-#### Quantifier l'indisponibilité&nbsp;: Comment&nbsp;?
+I used usleep to write in a log table every 10ms ([see note for more details](#note)) using the connection string described earlier.
 
-J'ai utilisé usleep pour écrire dans une table de log toute les 10ms ([voir note pour davantage de détail](#note)) en utilisant la chaîne de connexion décrite plus haut.
+Here is a link to the tool used for this test: [monitoring_replication](https://github.com/emerichunter/monitoring_replication).
+It allowed me to measure downtime during failover. 
+Installation and user guide are provided in the README file.
 
-Voici le lien vers l'utilitaire employé pour ce test&nbsp;: [monitoring_replication](https://github.com/emerichunter/monitoring_replication).
-Il m'a permis de mesurer le temps pendant lequel le cluster était indisponible durant la panne et le failover.
-L'installation et le mode d'emploi sont expliqués en détails dans le README.
-
-<!--LAV: Le pourquoi n'est pas le pb dans cet article censé présenter une nouvelle
-fonctionnalité de postgres 10. Dis simplement que tu échantillonnes toutes les 10ms
-sans expliquer pourquoi et rajoute en aparté le lien vers ton outil (ou alors j'ai mal compris) -->
-
+## 
 ## Remplissons le WAL&nbsp;!
 
 <!--LAV : il faut que tu expliques que tu cherches à provoquer une panne pour tester
