@@ -4,6 +4,8 @@ title: Pgbench-tools: Dawn Of benchmark
 date: 2017-10-21 08:57:00 GMT
 ---
 
+# DAWN OF BENCHMARK
+
 This is a translation of my [original post](https://www.loxodata.com/post/benchmarking-pratique/) in french for Loxodata - PostgreSQL experts in France
 
 During PgDAY Paris in march of 2017, I was lucky to attend Fabien Coelho's lecture on benchmarking. 
