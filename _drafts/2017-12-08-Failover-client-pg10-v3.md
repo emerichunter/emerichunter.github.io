@@ -118,18 +118,9 @@ Here is a link to the tool used for this test: [monitoring_replication](https://
 It allowed me to measure downtime during failover. 
 Installation and user guide are provided in the README file.
 
-## 
-## Remplissons le WAL&nbsp;!
+## Another file in the Wal
 
-<!--LAV : il faut que tu expliques que tu cherches à provoquer une panne pour tester
-le failover... Le remplissage des WALs n'est peut-être pas la meilleure panne à tester.
-En effet, de manière habituelle les file systems sont de même taille sur le primaire
-et le secondaire... Tu risques donc d'avori la même panne sur les 2 instances.
-
-Tu peux utiliser pg_crash pour tester une panne. Ou sinon explique simplement que
-tu crées cette panne (remplissage des WALs) de manière artificielle parce que la
-teneur de la panne n'a aucune importance, c'est le fait qu'il y ait une panne
-qui est important.-->
+In order to test our setup, we need to cause a failure.
 
 Pour tester notre bascule, il faut provoquer une panne sur le primaire.
 Une panne facile à provoquer est la saturation du FS par une grande quantité de fichiers WAL.
