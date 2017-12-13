@@ -1,8 +1,10 @@
 ---
 layout: post
-title: Pgbench-tools Part I
+title: Pgbench-tools: Dawn Of Benchmark
 date: 2017-10-21 08:57:00 GMT
 ---
+
+# DAWN OF BENCHMARK
 
 This is a translation of my [original post](https://www.loxodata.com/post/benchmarking-pratique/) in french for Loxodata - PostgreSQL experts in France
 
