@@ -129,12 +129,8 @@ Once the failure is caused and the failover triggered, we will take a look the r
 Here is an extract from the `repmgrd.log` file that exibits the failure as it has occured.
 The detection occurs line 2.
 The last three lines match the promotion of the standby.
-Please note that
+Please note that the timestamp shows 21 seconds until the promotion. 
 
-Voici un extrait de la trace log de `repmgrd.log` correspondant au test de remplissage de FS.
-La détection de la panne a lieu ligne 2.
-Les trois dernières lignes correspondent à la promotion du standby choisi en primaire.
-Notez que le marqueur de temps comptabilise 21 secondes jusqu'à la promotion du standby en nouveau primaire.
 
 ~~~~
 
