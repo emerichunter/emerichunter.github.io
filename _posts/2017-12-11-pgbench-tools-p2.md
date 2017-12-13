@@ -1,6 +1,6 @@
 ---
 layout: post
-Title: Pgbench-tools - part II 
+title: Pgbench-tools - part II 
 ---
       
 # GOING FURTHER
