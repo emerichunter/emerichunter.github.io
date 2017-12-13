@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Pgbench-tools: Dawn Of Benchmark
+title: Pgbench-tools part I: Dawn Of Benchmark
 date: 2017-10-21 08:57:00 GMT
 ---
 
