@@ -47,7 +47,7 @@ As well as `max_dirty` and `wal_written`.
 
 An `index.html` file is created at the root of the folder. It contains the aformentionned graphs (tps against client number and scaling factor).
 Tables containing detailled results for different sets are produced to simplify reading.
-For each test of each set, another report also named `index.html` is generated with graphs of tps, latency, iostat, meminfo and vmstat in a sub-folder `result/numberofset` which can give very extended information regarding the behaviour of server during the test.
+For each test of each set, another report also named `index.html` is generated with graphs of tps, latency, iostat, meminfo and vmstat in a sub-folder `result/numberofset` which can give very extended informations regarding the behaviour of server during the test.
 
 ### Example
 
@@ -199,7 +199,7 @@ In order to be rid of the background noise and free from artefacts, tests must b
 To mitigate this issue, it is also possible to run the same test several times. 
 This way one can get an average value.
 
-By seperating the outliers, one can obtain average values that represents a behaviour we might call "normal". If a test fails it is advised to delete it.
+By seperating the outliers, one can obtain average values that represent a behaviour we might call "normal". If a test fails it is advised to delete it.
 
 ### Parameters used
 
@@ -226,7 +226,7 @@ For the first part of my test, TOTTRANS (total number of transactions) and SETRA
 ## VACUUM
 
 Quick calculation will give you 4 scales (**1, 10, 100, 1000**) 6 values for clients (**1, 2, 4, 8, 16, 32**) and 3 test for each combination (**SETTIMES=3**) during 1 minute. 
-The total is therefore 4*6*3=72 tests of 1 minute. 
+The total is therefore 4 * 6 * 3=72 tests of 1 minute. 
 Initial loading of the database is not taken into account.
 
 Following the MVCC (management of multiple versions of a single tuple resulting of deletes and updates), all the transactions are going to leave dead tuples.
