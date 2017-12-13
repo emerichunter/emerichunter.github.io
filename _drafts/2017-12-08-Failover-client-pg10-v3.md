@@ -167,7 +167,7 @@ log node 2 (standby failover)
 
 ~~~~
 
-<!-- SAS&nbsp;: Comment sont-elles mesurées ? Et à quoi correspondent-elles ? -->
+Let's have a look a the inserts 
 Regardons ensuite le résultat des insertions effectuées grâce à notre outil, comportant la chaîne de connexion ainsi qu'une résolution temporelle de 10ms (1 INSERT toute les 10ms).
 Voici les mesures des insertions dans notre table de log lors de notre bascule vers notre nouveau primaire. (extrait)
 
