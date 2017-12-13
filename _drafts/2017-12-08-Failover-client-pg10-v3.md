@@ -167,9 +167,8 @@ log node 2 (standby failover)
 
 ~~~~
 
-Let's have a look a the inserts 
-Regardons ensuite le résultat des insertions effectuées grâce à notre outil, comportant la chaîne de connexion ainsi qu'une résolution temporelle de 10ms (1 INSERT toute les 10ms).
-Voici les mesures des insertions dans notre table de log lors de notre bascule vers notre nouveau primaire. (extrait)
+Let's have a look a the inserts performed by our little tool with a time resolution of an insert every 10ms.
+Here is part of our log table during the operation.
 
 |pk    | time                          |
 |:----:|:-----------------------------:|
@@ -192,8 +191,8 @@ Voici les mesures des insertions dans notre table de log lors de notre bascule v
 | 5916 | 2017-07-13 10:29:47.053968+02 |
 | 5917 | 2017-07-13 10:29:47.108371+02 |
 
-Les écritures ont repris au bout de 21 secondes.
-Le failover client fonctionne donc comme attendu.
+Writes start again after 21 seconds. 
+Well, it seems the client fulfilled its duty perfectly.
 
 
 ## Et ils vécurent heureux et eurent beaucoup de SELECT...
