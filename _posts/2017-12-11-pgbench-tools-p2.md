@@ -8,8 +8,8 @@ title: Pgbench-tools - part II
 
 This is a translation from french. You can find the original post [here](http://www.loxodata.com/post/benchmarking-pratique2/)
 
-Last time I spoke of pgbench-tools a benchmarking automatization tool.
-Today we are going to see how to make a proper start and give an example.
+Last time, I spoke of pgbench-tools a benchmarking automatization tool.
+Today, we are going to see how to make a proper start and give an example.
 Let's dive deeper into this tool !
 
 ## Unravelling the tests - step by step
@@ -22,15 +22,15 @@ Everything that follows is scripted.
 ### DB Intialisation 
 
 
-The first stop is to create a database, here default `pgbench_` which works the same as:
+The first step is to create a database, here a default `pgbench` will work the same as:
 
     pgbench -i
 
 ### Test
 
-Then pgbench is launched just like a regular bench with a previously set number of clients from the `config` file.
+Then pgbench is launched, just like a regular bench, with a previously set number of clients from the `config` file.
 If it happens to have more than one value for the clients number in that file, a loop is performed.
-A second loop is performed within if the file contains several values for scales (please refer to the previous post for details).
+A second loop is performed within, if the file contains several values for scales (please refer to the previous post for details).
 
 ### Data collection
 
@@ -52,6 +52,7 @@ For each test of each set, another report also named `index.html` is generated w
 ### Example
 
 Here is what to expect in your shell after firing  `runset`:
+
 ~~~
 
 postgres@BENCHER pgbench-tools-master]$ ./runset
@@ -110,12 +111,12 @@ Worst latency results:
 ### Report for each test
 
 
-Last time I wrote about the __set report__, but this time I will focus on the __test report__.
+Last time, I wrote about the __set report__, but this time I will focus on the __test report__.
 Collected data are stored, sorted and grouped not only by set but also by test, in the aformentionned database which is declared in the config file (defaults `results`).
 
 
 One can find a subfolder named after each test's number in the main folder `pgbench-tools/results`. 
-It follows that one can easily copy these without having to make any dump from de database itself.
+It follows, that one can easily copy these without having to make any dump from de database itself.
 
 At last, metrics such as `vmstat`, `iostat` and `meminfo` are collected into logfile in this very same folder.
 One can also find graphs showing the behaviour of tps, latency, CPU, memory, buffers and much more for each test.
@@ -191,7 +192,7 @@ Which consists of 3 UPDATEs, 1 SELECT, 1 INSERT. This is the default and I kept 
 Size of database must be taken into account, concurrent client connexions, architecture.
 In my case, clusters range from few MB to 1,9TB and clients rarely exeed 32.
 Most instances are under the Database Administrators responsibility and are used in mixed case scenario with a single cluster.
-Therefore the choice of keeping much of the defaults makes perfect sense **in MY case**.
+Therefore, the choice of keeping much of the defaults makes perfect sense **in MY case**.
 
 ## Witch Hunt: The Outliers
 
@@ -225,7 +226,7 @@ For the first part of my test, TOTTRANS (total number of transactions) and SETRA
 
 ## VACUUM
 
-Quick calculation will give you 4 scales (**1, 10, 100, 1000**) 6 values for clients (**1, 2, 4, 8, 16, 32**) and 3 test for each combination (**SETTIMES=3**) during 1 minute. 
+Quick calculation will give you 4 scales (**1, 10, 100, 1000**), 6 values for clients (**1, 2, 4, 8, 16, 32**) and 3 test for each combination (**SETTIMES=3**) during 1 minute. 
 The total is therefore 4 * 6 * 3=72 tests of 1 minute. 
 Initial loading of the database is not taken into account.
 
@@ -234,15 +235,15 @@ Moreover, when many rows are updated (or deleted), it is also necessary to updat
 
 To avoid `autovacuum` in between tests and slowing of performance, a `VACUUM ANALYZE` is performed if no vacuum has been done in last 10 seconds of cleanup phase of the code during the last test.
 
-It is an approximation of course, but the downside is having to many VACUUM instead of to little. 
-It is a sensible argument for anyone careful about regular VACUUMs.
+It is an approximation of course, but the downside is having too many VACUUM instead of too little. 
+It is a sensible argument for anyone careful enough about regular VACUUMs.
 
 ## Conclusion
 
 Vacuum, reproducibility, serialization and OS/DB statistics turn `pgbench-tools` into an extraordinary wrapper of pgbench.
 It is possible to find relevant scripts for many different use cases according to the type of test, the size of the dataset, the number of clients among other things (remaining a good approximation, of course).
 
-However this tool has some limitations which we are going to explore in a next - _more practical_ - article with a complete series of test and a context set in the real world with its own constraints.
+However, this tool has some limitations which we are going to explore in a next - _more practical_ - article with a complete series of test and a context set in the real world with its own constraints.
 I will also speak about many other aspects : interpretation of the results, the strategy underneath, and how to reach a (relatively) definitive conclusion.
 I will count the changes, improvements, corrections and new features on this project and they are numerous.
 
