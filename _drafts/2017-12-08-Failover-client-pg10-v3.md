@@ -194,7 +194,7 @@ Here is part of our log table during the operation.
 Writes start again after 21 seconds. 
 Well, it seems the client fulfilled its duty perfectly.
 
-
+## They lived happily ever after 
 ## Et ils vécurent heureux et eurent beaucoup de SELECT...
 
 Nous avons de nouvelles écritures enregistrées au bout de 21 secondes, mais 25 INSERTS sont manquants (5886-5911).
