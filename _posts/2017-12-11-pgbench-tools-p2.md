@@ -244,7 +244,7 @@ Vacuum, reproducibility, serialization and OS/DB statistics turn `pgbench-tools`
 It is possible to find relevant scripts for many different use cases according to the type of test, the size of the dataset, the number of clients among other things (remaining a good approximation, of course).
 
 However, this tool has some limitations which we are going to explore in a next - _more practical_ - article with a complete series of test and a context set in the real world with its own constraints.
-I will also speak about many other aspects : interpretation of the results, the strategy underneath, and how to reach a (relatively) definitive conclusion.
+I will also speak about many other aspects: interpretation of the results, the strategy underneath, and how to reach a (relatively) definitive conclusion.
 I will count the changes, improvements, corrections and new features on this project and they are numerous.
 
 Until next time, keep benching guys !
