@@ -22,7 +22,7 @@ Above all else : is the damn thing working ?
 
 ### Which HA ?
 
-To cut it short I chose `REPMGR`.
+To cut it short, I chose `REPMGR`.
 
 Configuration is 3 nodes (1 primary and 2 standbys) plus a witness server.
 In case you wonder, this last player serves as as casting vote in a situation of doubt over which node need to be promoted.
@@ -122,11 +122,15 @@ Installation and user guide are provided in the README file.
 
 In order to test our setup, we need to cause a failure.
 
-Pour tester notre bascule, il faut provoquer une panne sur le primaire.
-Une panne facile à provoquer est la saturation du FS par une grande quantité de fichiers WAL.
-Une fois la panne provoquée et le failover de base de données effectuée, nous regardons ensuite dans les traces laissées par repmgrd.log puis dans la table de log créée et approvisionnée par notre utilitaire.
+In order to perform our experiment, we need to prompt a failure on the primary.
+An easy way to achieve this, is to flood the WAL folder with files.
+Once the failure is caused and the failover triggered, we will take a look the repmgr.log and then at the log table created and supplied with constant INSERTs for this purpose. 
 
-<!-- SAS&nbsp;: Ca sort d'où ? -->
+Here is an extract from the `repmgrd.log` file that exibits the failure as it has occured.
+The detection occurs line 2.
+The last three lines match the promotion of the standby.
+Please note that
+
 Voici un extrait de la trace log de `repmgrd.log` correspondant au test de remplissage de FS.
 La détection de la panne a lieu ligne 2.
 Les trois dernières lignes correspondent à la promotion du standby choisi en primaire.
