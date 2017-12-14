@@ -12,9 +12,10 @@ Yes, PostgreSQL 10 is out since october 5th and it has (among others) a new awes
 Client can reconnect automaticaly to cluster after failure to either RO or RW instance.
 
 So, here are some questions you might have :
-Is it easy to setup ? 
-How much downtime ?
-Above all else : is the damn thing working ?
+
+* Is it easy to setup ? 
+* How much downtime ?
+* Above all else : is the damn thing working ?
 
 ## In the Beginning... 
 
