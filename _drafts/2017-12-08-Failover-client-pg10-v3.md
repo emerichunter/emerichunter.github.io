@@ -206,45 +206,22 @@ When the writes are starting again, the client informs us about the success.
 As we can see, the **failover works just fine**, and we do get new writes on the newly promoted primary after the failure.
 In the end, downtime lasted only 21 seconds and the failover itself - client and database - lasted under a second.
 
-The writes also paused
+The writes also paused when no node was online.
+The error the clients gets is not given here, however when you get it, you know you can confirm with some proper investigations and take the necessary steps.
 
-Nous avons pu constater que les écritures ont été mise en attente lorsque aucun nœud n'était disponible.
-L'erreur remontée au client n'est pas produite ici, cependant elle permet d'avoir un avertissement que nous pouvons confirmer lors de l'analyse des traces et de prendre les dispositions nécessaires.
-<!--LAV : que veux-tu dire par "pas documentée" ? -->
-
-De plus, nous avons vu ensemble qu'une fois la bascule effectuée, il nous manquait des lignes dans notre table de log.
-Il faut rejouer les insertions pour lesquelles le client a reçu une erreur.
-
-<!--Il est possible d'éviter de perdre ces lignes, et aussi de les récupérer si tout se passe correctement.
-En fonction de la configuration et de la solution de bascule automatique, je devrais, si nécessaire, restaurer mes données pour les réintégrer à ma nouvelle timeline.-->
-<!--LAV: Il n'y a pas de perte d'écriture. Il y a eu un incident et le client a
-reçu un message d'erreur lui disant que ses écritures n'ont pas été effectuées.
-L'incident n'a duré que 21 secondes.-->
-
-<!--Mais encore une fois il est tout à fait possible d'éviter cet écueil en modifiant la configuration. 
-Dans le cas d'une réplication synchrone cependant, il faut garder à l'esprit qu'une panne sur le réplica entraine le bloquage de la primaire qui ne peut commiter les information sur l'intégralité du cluster.
-Choix cornélien, il faut bien l'avouer. -->
-<!--LAV : C'est pour cette raiuson que la communauté conseille de mettre 2 standbys
-en réplication synchrone (avec un quorum de 1)-->
-
-
-<!--Nous n'avons perdu "que" 25 écritures, soit 250 millisecondes (`10000µs*25`), malgré les 20 secondes d'indisponibilité.
-C'est un moindre mal, mais si nous voulons garantir l'intégrité des données, il faut pouvoir mettre en oeuvre les moyens de conserver dans la mesure du possible cette intégrité.-->
-
-<!-- Le temps pendant lequel aucune instance n'était disponible, les écritures ont été mises en attente par le client.-->
-
-<!-- SAS&nbsp;: On les a perdu ou pas ? -->
-<!--LAV : idem SAS-->
+Moreover, we saw that once the failover has been performed, some lines were missing from the log table.
+Those INSERTS need to be played again.
 
 
 ******
 # note
-Il est possible d'augmenter la fréquence d'échantillonnage de notre mesure. Cependant, j'ai choisi cette mesure pour tenter de respecter un ordre de grandeur déterminé par les échelles de mon système&nbsp;:
 
-1. en dessous (largement) du temps total d'indisponibilité attendu (environ 20 secondes voir plus haut)
-2. en dessous du temps nécessaire à la bascule une fois l'opération de basculement déclenchée (de l'ordre de 1s)
-3. au dessus des temps machines&nbsp;: connexion à l'instance, logs système et PG, fréquence cpu... dans le cas contraire ma mesure aurait pu influencer le résultat par un trop grand nombre d'INSERTs à réaliser.
+It is possible to increase the sampling rate. Nevertheless, I chose this rate to take into consideration the order of magnitude of the system scales:
 
-Ce qui aurait impacté les performances du serveur et de l'instance (imaginez une mesure toute les nanosecondes avec nanosleep&nbsp;: on atteindrait alors le milliard de tps&nbsp;!).
-Avec une mesure toute les 10ms, nous avons alors 100 tps seulement pour le traçage des écritures.
-Ce qui en soit correspond à un système avec une charge tout à fait honorable (environ 8 millions d'écritures par jour).
+1. (greatly) under total expected downtime (somewhere around 20s)
+2. under the time necessary to perform the failover databasewise (around 1s)
+3. above server time: connection to the cluster, syslogs, Postgres logs, CPU frequency... Otherwise, our measurement could influence the results by making too many INSERTS.
+
+That would have modified performances: can you imagine an insert every nanosecond with nanosleep ?
+We would reach the billion (1,000,000,000) tps just for the sake of logging.
+With a measurement every 10ms, we stay in the 100 tps which in turn reaches 8 million inserts a day, and it is actually an honorable amount of transactions.
