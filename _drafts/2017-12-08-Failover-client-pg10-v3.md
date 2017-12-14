@@ -194,23 +194,19 @@ Here is part of our log table during the operation.
 Writes start again after 21 seconds. 
 Well, it seems the client fulfilled its duty perfectly.
 
-## They lived happily ever after 
-## Et ils vécurent heureux et eurent beaucoup de SELECT...
+## Live to see another SELECT...
 
-Nous avons de nouvelles écritures enregistrées au bout de 21 secondes, mais 25 INSERTS sont manquants (5886-5911).
-Le client reçoit une erreur lorsque les insertions n'ont pas pu être faites.
-Lorsque les écritures reprennent sur le nouveau primaire, le client nous informe des nouvelles insertions.
-<!-- SAS&nbsp;: Comment voit-on les nouvelles écritures ? Que doit-on faire de ces inserts manquants ? Où
-sont-ils ? Le client est-il prévenu ? -->
-<!--LAV : idem SAS, je n'ai pas compris.-->
+New writes are performed after 21 seconds, but 25 INSERTS are missing (5886-5911).
+The client receives an error when INSERTS fail to succeed.
+When the writes are starting again, the client informs us about the success.
 
 
 ## Conclusion
 
-<!-- SAS&nbsp;: PostgreSQL est génial. Mais je ne sais pas ce qui fonctionne, parce qu'on a perdu des
-écritures. -->
-La bascule **fonctionne** puisque nous retrouvons nos écritures qui continuent sur le nouveau primaire après la promotion.
-Au final, l'incident n'a duré que 21 secondes et le failover a été inférieur à 1 seconde (client et base de données).
+As we can see, the **failover works just fine**, and we do get new writes on the newly promoted primary after the failure.
+In the end, downtime lasted only 21 seconds and the failover itself - client and database - lasted under a second.
+
+The writes also paused
 
 Nous avons pu constater que les écritures ont été mise en attente lorsque aucun nœud n'était disponible.
 L'erreur remontée au client n'est pas produite ici, cependant elle permet d'avoir un avertissement que nous pouvons confirmer lors de l'analyse des traces et de prendre les dispositions nécessaires.
