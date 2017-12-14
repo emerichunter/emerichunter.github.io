@@ -3,7 +3,6 @@ published: false
 ---
 # FAILOVER
 
-<!-- 3e Réécriture&nbsp;: -->
 
 Today, I am going to talk about automatic failover.
 
