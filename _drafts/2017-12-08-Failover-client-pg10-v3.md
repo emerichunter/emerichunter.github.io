@@ -15,7 +15,7 @@ So, here are some questions you might have :
 
 * Is it easy to setup ? 
 * How much downtime ?
-* Above all else : is the damn thing working ?
+* Above all else : Is the damn thing working ?
 
 ## In the Beginning... 
 
