@@ -33,4 +33,4 @@ So let's get a tool to do just that... Wait! I already made one!
 ### Enters the Savior
 
 Some time ago, I made this tool and today I will just blog briefly about it. Because sometimes, this kind of things can help. Depending on the context. 
-If you are poor, you have nothing
+If you are poor, you have nothing and no one is there to help you or provide you with any tool, this tool is for you. 
