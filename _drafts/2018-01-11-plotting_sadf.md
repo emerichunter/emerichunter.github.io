@@ -27,16 +27,16 @@ How can you graph things easily ? Well GNUplot can do just that for you, for fre
 In case you didn't know you can even graph in a linux terminal. 
 The most basic being: the dumb terminal. 
 
-[picture]
+[picture of dumb term]
 
 But you need to get everything to work, and not spend too much time on this endeavor. 
 
-So let's get a tool to do just that... Wait! I already made one! 
+So let's get a tool to do just that... Wait! I just made one! 
 
 
 ### Enters the Savior
 
-Some time ago, I made this tool and recently I made it more dynamic so that it can take many different options. Because sometimes, this kind of things can help. Depending on the context. 
+Some time ago, I made this tool and recently I made it more dynamic so that it can take many different options. Because sometimes, this kind of things can help depending on the context. 
 If you are poor, you have nothing and no one is there to help you or provide you with any tool, this might save your life... or save you from a lot of trouble at the very least.
 
 link to git
@@ -44,4 +44,7 @@ link to git
 ### Deaf, dumb and blind
 
 Well, with this you can also graph in .png. Graph any day of the month that you wish to see. 
-Change the size of the picture/terminal and even add colors to your terminal.
+Change the size of the display and even add colors to your terminal.
+X11 is on the way. 
+
+You want more? Next time!
