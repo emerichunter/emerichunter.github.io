@@ -50,4 +50,6 @@ Well, with this you can also graph in .png. Graph any day of the month that you 
 Change the size of the display and even add colors to your terminal.
 You can use X11 and png formats they both have been invited to the party!
 
+I might add some reports in the future, like network stats, but this will do for now.
+Enjoy!
 
