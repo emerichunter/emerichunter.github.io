@@ -3,9 +3,7 @@ published: false
 ---
 ## Plotting sadf
 
-Let's talk about sysstat... Well no, let's talk about Postgres first...
-
-Actually let's talk about sysstat for Postgres. And about graphs. Dumb graphs. 
+Sysstat, Postgres and dumb terminal.  
 
 ### And there was light
 
@@ -28,6 +26,7 @@ In case you didn't know you can even graph in a linux terminal.
 The most basic being: the dumb terminal. 
 
 [picture of dumb term]
+[picture of x11]
 
 But you need to get everything to work, and not spend too much time on this endeavor. 
 
@@ -45,6 +44,6 @@ link to git
 
 Well, with this you can also graph in .png. Graph any day of the month that you wish to see. 
 Change the size of the display and even add colors to your terminal.
-X11 is on the way. 
+X11 has also been invited to the party!
 
-You want more? Next time!
+
