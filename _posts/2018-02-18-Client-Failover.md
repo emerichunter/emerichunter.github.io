@@ -52,8 +52,10 @@ retry_promote_interval_secs=10
 
 ~~~
 
-Here is what's expected:</br>
-`Downtime` = `master_response_timeout` + `reconnect_attempts`*`reconnect_interval`, </br>
+Here is what's expected:
+
+`Downtime` = `master_response_timeout` + `reconnect_attempts`*`reconnect_interval`
+
 Roughly 5 + 3*5 = 20 secondes of downtime for the database.
 
 
