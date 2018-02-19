@@ -129,7 +129,7 @@ Once the failure is caused and the failover triggered, we will take a look at th
 Here is an extract from the `repmgrd.log` file that exibits the failure as it has occured.
 The detection occurs line 2.
 The last three lines match the promotion of the standby.
-Please note that the timestamp shows 21 seconds until the promotion. 
+Please note that the timestamp shows 21 seconds until promotion. 
 
 
 ~~~~
