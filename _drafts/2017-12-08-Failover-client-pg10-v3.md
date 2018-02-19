@@ -66,13 +66,13 @@ What needs to be done to reconnect the client to the new primary as soon as it i
 The solution is [automatic client failover](https://wiki.postgresql.org/wiki/New_in_postgres_10#Connection_Failover_and_Routing_in_libpq).
 
 This is entirely about the client. The clusters are all in version 9.6.
-It is important to notice that in order to benefit from this feature it is not necessary to install PG10 on the clusters, older versions will do just fine
+It is important to notice that in order to benefit from this feature it is not necessary to install PG10 on the clusters, older versions will do just fine.
 
 The client is only looking for the first node available.
 **READ-ONLY** (RO): It will pick any node (primary or secondary).
 **READ-WRITE** (RW): It will pick the first writable node (primary).
 
-Implications are important, with a solution to automatically failover connections, it is not longer necessary to rewrite the connection string manually.
+Implications are important, with a solution to automatically failover connections, it is no longer necessary to rewrite the connection string manually.
 The client is going to regain a connection and be instrumental in the measurement of downtime.
 
 #### Figuring how to setup the connection string properly
@@ -81,9 +81,9 @@ Let us do a little  bit of reading [here](http://paquier.xyz/postgresql-2/postgr
 Essentially:
 
 * We need to indicate wether we need to connect on a primary (RW) or on a any cluster standby or primary (RO).
-Here for writes failover of course we need to set up a connection string pointing to a primary server.
+Here of course, for writes failover we need to set up a connection string pointing to a primary server.
 
-* But that's not all, we have to specify a list with all the nodes of our configuration with the ports (all the more if they are different from one another).
+* But that's not all. We need to specify a list with all the nodes of our configuration with the ports (all the more if they are different from one another).
 
 **Practical matter**
 
@@ -108,7 +108,7 @@ CONNINFO="postgresql://"$HOST_1":"$","$HOST_2":"$PORT_2","$HOST_3":"$PORT_3"/"$M
 
 ~~~
 
-Once connection has been restored, I will be able to establish length of downtime and quantify how much writes have been lost during failover.
+Once connection has been restored, I will be able to establish a time frame of downtime and quantify how much writes have been lost during failover.
 
 #### Quantum Leap: How to measure it?
 
@@ -120,11 +120,9 @@ Installation and user guide are provided in the README file.
 
 ## Another file in the Wal
 
-In order to test our setup, we need to cause a failure.
-
-In order to perform our experiment, we need to prompt a failure on the primary.
+In order to test our setup, we need to prompt a failure on the primary.
 An easy way to achieve this, is to flood the WAL folder with files.
-Once the failure is caused and the failover triggered, we will take a look the repmgr.log and then at the log table created and supplied with constant INSERTs for this purpose. 
+Once the failure is caused and the failover triggered, we will take a look at the `repmgrd.log` and then at the log table created and supplied with constant INSERTs for this purpose. 
 
 Here is an extract from the `repmgrd.log` file that exibits the failure as it has occured.
 The detection occurs line 2.
