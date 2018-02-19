@@ -8,7 +8,7 @@ Today, I am going to talk about automatic failover.
 
 Not just about cluster failvover (primary failure and standby taking over) but from client point of view.
 
-Yes, PostgreSQL 10 is out since october 5th and it has (among others) a new awesome feature. 
+Yes, PostgreSQL 10 is out since october 5th and 11 is on its way. It has (among others) a new awesome feature. 
 Client can reconnect automaticaly to cluster after failure to either RO or RW instance.
 
 So, here are some questions you might have :
@@ -30,7 +30,7 @@ In case you wonder, this last player serves as as casting vote in a situation of
 ![Configuration REPMGR](https://www.loxodata.com/images/post/failover-2017/config_REPMGR.png)
 
 
-Here is an extract from repmgr.conf&nbsp;:
+Here is an extract from repmgr.conf:
 
 ~~~
 cluster=test_repmgr
@@ -60,7 +60,7 @@ Roughly 5 + 3*5 = 20 secondes of downtime for the database.
 ### A man who is his own lawyer...
 
 
-Once configuration is setup, how can one measure downtime ?
+Once configuration is setup, how can one measure downtime?
 What needs to be done to reconnect the client to the new primary as soon as it is available?
 
 The solution is [automatic client failover](https://wiki.postgresql.org/wiki/New_in_postgres_10#Connection_Failover_and_Routing_in_libpq).
@@ -80,7 +80,7 @@ The client is going to regain a connection and be instrumental in the measuremen
 Let us do a little  bit of reading [here](http://paquier.xyz/postgresql-2/postgres-10-libpq-read-write/) and [there](http://paquier.xyz/postgresql-2/postgres-10-multi-host-connstr/). This will allow us to get a pretty good idea on how to proceed.
 Essentially:
 
-* We need to indicate wether we need to connect on a primary (RW) or on a any cluster standby or primary (RO).
+* We need to mention wether we need to connect on a primary (RW) or on a any cluster standby or primary (RO).
 Here of course, for writes failover we need to set up a connection string pointing to a primary server.
 
 * But that's not all. We need to specify a list with all the nodes of our configuration with the ports (all the more if they are different from one another).
