@@ -1,7 +1,7 @@
 ---
 published: false
 ---
-# FAILOVER
+# CLIENT FAILOVER
 
 
 Today, I am going to talk about automatic failover.
