@@ -61,7 +61,7 @@ Roughly 5 + 3*5 = 20 secondes of downtime for the database.
 
 
 Once configuration is setup, how can one measure downtime ?
-What needs to be done to reconnect the client to the new primary as soon as it is available ?
+What needs to be done to reconnect the client to the new primary as soon as it is available?
 
 The solution is [automatic client failover](https://wiki.postgresql.org/wiki/New_in_postgres_10#Connection_Failover_and_Routing_in_libpq).
 
