@@ -38,35 +38,26 @@ I might add, that the workload is multiplied (CPU and RAM) on said server for th
 
 Here is what is covered in version 9.6:
 * Parallel Seq Scan
-* 
+* Parallel JOIN, aggregates
 
-* Requête (Parallel query)
-* Scan de table entière (Parallel seqscan)
-* Jointure et agrégat (Parallel JOIN, aggregate)
-
-Ce qui est couvert en plus dans la version 10&nbsp;:
-<!-- JCA
-Ce qui est couvert en plus dans la version 10&nbsp;:
--->
-
+What is new in current version 10:
 * Parallel bitmap heap scans
-* Parallel B-tree index scans (inclus Index Only Scan)
+* Parallel B-tree index scans (including Index Only Scan)
 * Parallel merge joins
 
-## Configuration par défaut
+## Default configuration
 
-Selon la documentation, l'activation du parallélisme ne nécessite que 2 paramètres&nbsp;:
+According to the documentation, enabling parallel query only relies on these 2 parameters:
 
-* `max_parallel_workers_per_gather` postitionné à 2 ou plus (2 étant la valeur par défaut)
-* `dynamic_shared_memory_type` positionné à une valeur différente de `none` (`posix` par défaut)
+* `max_parallel_workers_per_gather` set to 2 or more (2 is default)
+* `dynamic_shared_memory_type` must be different from `none` (`posix` by default)
 
-**La parallélisation est donc réglée à 2 processus par défaut.**
+**Parallel query is set to ON qith 2 proceses by default**
+
 
 ## Test "out of the box"
-<!--JCA
-Pour pouvoir observer le parallélisme, initialisons...
--->
-Initialisation d'une base avec pgbench, pour observer le parallélisme
+
+In order to observe parallel query in action, let us create a database with `pgbench`:
 
 ~~~bash
 createdb pgbench
@@ -91,7 +82,7 @@ pgbench=# select count(*) FROM pgbench_accounts ;
 (1 row)
 ~~~
 
-Testons une requête dans la base que nous venons de créer.
+Let us run a query in said database.
 
 ~~~sql
 pgbench=# EXPLAIN select count(*) FROM pgbench_accounts ;
@@ -105,6 +96,9 @@ pgbench=# EXPLAIN select count(*) FROM pgbench_accounts ;
 (5 rows)
 ~~~
 
+We can now see 2 _workers_ planned in the execution plan, **without moving a finger**.
+
+A _worker_ 
 Nous pouvons observer 2 _workers_ planifiés dans le plan d'exécution, **sans rien modifier**.
 Un _worker_ est une unité d'exécution parallèle pour une étape du plan de requêtage. 
 Nous verrons plus loin que s'il est planifié, il ne sera pas nécessairement lancé.
