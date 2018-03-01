@@ -7,8 +7,6 @@ published: false
 PostgreSQL 10 is here, and PostgreSQL 11 is coming with more parallel query than ever. 
 Let's have a look at what is already here before stepping into the unknown.
 
-Avec PostgreSQL version 10 qui arrive, c'est également davantage de parallèlisme.
-Naturellement, cela fait soulever plusieurs questions&nbsp;:
 Of course, you must have many questions rushing to your mind, among them:
 
 * What does it do? 
