@@ -8,7 +8,7 @@ Sysstat, Postgres and dumb terminal.
 ### And there was light
 
 The sysstat package, which can be found on many linux based servers nowadays is very usefull. 
-It can collect data about what is happening to your CPU, RAM... [add references]
+It can collect data about what is happening to your CPU, RAM... (http://bencane.com/2012/07/08/sar-sysstat-linux-performance-statistics-with-ease/)[Here is a good start.]
 
 I won't get into specifics today, this is not the point. I would like to present it from the database perspective. It's all about persperctive. The Postgres user can access sysstat informations. And more interrestingly everything collected by `sar`. 
 
@@ -27,7 +27,8 @@ How can you graph things easily ? Well GNUplot can do just that for you, for fre
 In case you didn't know, you can even graph in a linux terminal. 
 The most basic being: the dumb terminal. 
 
-[picture of dumb term]
+(https://github.com/emerichunter/plotting_sadf/raw/master/sar_cpu_dumb.PNG)[picture of dumb term]
+(https://github.com/emerichunter/plotting_sadf/raw/plottingsadfv2/plotting_sadf.PNG)[same with colors]
 
 And the next thing you can do, when you have export display on, is use x11 terminal
 [picture of x11]
@@ -42,7 +43,7 @@ So let's get a tool to do just that... Wait! I just made one!
 Some time ago, I made this tool and recently I made it more dynamic so that it can take many different options. Because sometimes, this kind of things can help. 
 If you are poor, you have nothing and no one is there to help you or provide you with any tool, this might save your life... or save you from a lot of trouble at the very least.
 
-link to git
+(https://github.com/emerichunter/plotting_sadf/tree/plottingsadfv2)[link to git]
 
 ### Deaf, dumb and x11
 
@@ -52,4 +53,3 @@ You can use X11 and png formats they both have been invited to the party!
 
 I might add some reports in the future, like network stats, but this will do for now.
 Enjoy!
-
