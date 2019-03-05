@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fr-FR">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>PostgreSQL et la parallélisation (partie 3)</title>
+  <meta name="description" content="Un hack de la parallélisation dans PG10 pour les experts.">
+
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,400i,700,900' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" media="all" href="/css/loxo-thimble.min.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="/css/loxodata.min.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="/css/loxokai.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="/css/jquery.fancybox.css" />
+  
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+
+<body class="site">
+
+  <a href="/">
+  <div id="intro" class="header row justify-center align-center">
+    <div class="row justify-center align-center">
+    <div class="main-logo"></div>
+      <div class="cell fit">
+          <h1 class="h1 super-header logo">LOXODATA</h1>
+      </div>
+    </div>
+  </div>
+  </a>
+
+  <div class="page">
+
+  <div class="row colors-compressed align-bottom">
+    <div class="cell color-1"></div>
+    <div class="cell color-2"></div>
+    <div class="cell color-3"></div>
+    <div class="cell color-4"></div>
+    <div class="cell color-5"></div>
+    <div class="cell color-6"></div>
+    <div class="cell color-7"></div>
+    <div class="cell color-8"></div>
+    <div class="cell color-9"></div>
+  </div>
+
+  <div class="row justify-end align-top main">
+    
+      <div class="cell fit">
+        <a href="/#services" class="button flat">Services</a>
+        <a href="/formations/" class="button flat">Formations</a>
+        <a href="/#references" class="button flat">Références</a>
+        <a href="/#contact" class="button flat">Contact</a>
+        <a href="/post" class="button flat">Blog</a>
+      </div>
+  </div>
+
+
+<div class="row">
+  <div class="cell two"></div>
+  <div class="cell seven">
+    <article class="article article-type-post" itemscope="" itemprop="blogPost">
+        <div class="article-inner card-inner">
+            
+            <a href="/post/parallelquery3/" itemprop="url">
+                <img src="/head/hiddenelephant.jpg" class="article-banner">
+            </a>
+            
+
+            <div class="article-header" itemprop="articleBody">
+            <h1 class="h3">PostgreSQL et la parallélisation (partie 3)</h1>
+            <div class="row article-details">
+              <img src="/images/articles/calendar.svg">2018-01-04 &nbsp;
+              <img src="/images/articles/words.svg">701 mots, 4 minutes de lecture
+             &nbsp;
+              <img src="/images/articles/pencil.svg">Emeric Tabakhoff
+            
+
+            </div>
+            </div>
+
+            <div class="article-entry" itemprop="articleBody">
+              <div class="row shspace"></div>
+                
+
+<p>Je vous ai parlé de parallélisation basique, puis avancée.
+Je vais aujourd&rsquo;hui vous faire (re)découvrir une fonctionnalité très spéciale de la parallélisation.
+Celle-ci permet non plus de contrôler ce qui se passe lors d&rsquo;une session ou d&rsquo;une transaction mais au niveau de la table elle-même.
+Démarrons cet ultime (et très court) billet pour les experts les plus avancés.
+<!-- Référence pour controler et article suivant https://blog.rustprooflabs.com/2018/02/pg10_parallel_queries --></p>
+
+<h2 id="secret-d-alchimiste">Secret d&rsquo;alchimiste</h2>
+
+<p>Il existe une fonctionnalité, présente dans PostgreSQL depuis la version 9.6, permettant de paramétrer le nombre de <em>workers</em> pour une table donnée.
+Celle-ci est documentée dans les paramètres de stockage d&rsquo;une table, ce qui, si l&rsquo;on n&rsquo;y prend garde, la rend difficile à trouver.
+Vous la trouverez en cherchant <code>Storage parameter - parallel_workers</code> (voir <a href="https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS">ici</a>):
+<!-- JCA
+Cette tournure n'est pas très évidente.
+Celle-ci est documentée dans les paramètres de stockage d'une table, ce qui, si l'on n'y prend garde, la rend difficile à trouver. 
+Vous la trouverez en cherchant `Storage parameter - parallel_workers` (voir [ici](https://www.postgresql.org/docs/current/static/sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS)):
+--></p>
+
+<pre><code>ALTER TABLE... SET  (parallel_workers =...)
+</code></pre>
+
+<p>ou</p>
+
+<pre><code>CREATE TABLE... WITH (parallel_workers =...)
+</code></pre>
+
+<!-- JCA
+je reste un peu sur ma faim, peut être expliciter ici en français l'objectif même si ça peut paraître évident ?
+-->
+
+<p>Ceci permet de créer ou modifier une table en déterminant à l&rsquo;avance le nombre limite de <em>worker</em> pouvant opérer sur ladite table.</p>
+
+<h2 id="maître-de-l-univers-postgresql">Maître de l&rsquo;Univers PostgreSQL</h2>
+
+<!-- JCA PostgreSQL -->
+
+<p>Cela autorise à configurer le nombre de <code>workers</code> mais toujours limité par <code>max_worker_processes</code> sur une table en particulier.
+Il peut aussi bien servir à limiter le nombre de worker.</p>
+
+<!-- JCA
+un show du max_worker_processes avant chaque query serait bien ?
+Par ailleurs, je me pose la question de savoir si avec  max_worker_processes est à 2 et qu'on peut passer à 4 en faisant le ALTER
+
+Shunter n'est pas le mot, car en théorie shunter c'est bypasser dans les deux sens, or ici il me semble que ça ne fonctionnera que dans un seul sens (vers le bas) 
+-->
+
+<pre><code class="language-sql">pgbench=# ALTER TABLE pgbench_accounts SET (parallel_workers=2) ;
+ALTER TABLE
+pgbench=# EXPLAIN ANALYZE select count(aid) from pgbench_accounts where aid &gt; 100 and aid &lt; 1000000 and bid &gt; 1000 and bid &lt; 900000;
+                                                                             QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=43942.69..43942.70 rows=1 width=8) (actual time=143.105..143.106 rows=1 loops=1)
+   -&gt;  Gather  (cost=100.44..43942.69 rows=1 width=4) (actual time=143.098..143.098 rows=0 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         -&gt;  Parallel Index Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.43..43842.59 rows=1 width=4) (actual time=133.741..133.741 rows=0 loops=3)
+               Index Cond: ((aid &gt; 100) AND (aid &lt; 1000000))
+               Filter: ((bid &gt; 1000) AND (bid &lt; 900000))
+               Rows Removed by Filter: 333300
+ Planning time: 0.822 ms
+ Execution time: 145.843 ms
+(10 rows)
+</code></pre>
+
+<p>Qu&rsquo;à l&rsquo;augmenter</p>
+
+<pre><code class="language-sql">pgbench=# ALTER TABLE pgbench_accounts SET (parallel_workers=4) ;
+ALTER TABLE
+pgbench=# EXPLAIN ANALYZE select count(aid) from pgbench_accounts where aid &gt; 100 and aid &lt; 1000000 and bid &gt; 1000 and bid &lt; 900000;
+                                                                             QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=41429.90..41429.91 rows=1 width=8) (actual time=139.697..139.697 rows=1 loops=1)
+   -&gt;  Gather  (cost=100.44..41429.89 rows=1 width=4) (actual time=139.691..139.691 rows=0 loops=1)
+         Workers Planned: 4
+         Workers Launched: 4
+         -&gt;  Parallel Index Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.43..41329.79 rows=1 width=4) (actual time=124.760..124.760 rows=0 loops=5)
+               Index Cond: ((aid &gt; 100) AND (aid &lt; 1000000))
+               Filter: ((bid &gt; 1000) AND (bid &lt; 900000))
+               Rows Removed by Filter: 199980
+ Planning time: 0.659 ms
+ Execution time: 142.571 ms
+(10 rows)
+</code></pre>
+
+<p>Sans jamais avoir besoin de redémarrer l&rsquo;instance contrairement à une modification de <code>max_worker_processes</code>.</p>
+
+<!-- ETA réécrire cette partie : interprétation fausse-->
+
+<h2 id="nouvelle-frontière">Nouvelle frontière</h2>
+
+<p>Cette configuration reste cependant limitée par le nombre maximum de processus de l&rsquo;instance.
+Dans le cas où mon instance est limitée à 4 processus, je ne pourrai toujours pas franchir cette restriction.
+Si je tente de passer outre la limite, voici ce qu&rsquo;il se passe.</p>
+
+<!-- JCA
+Ici aussi, je mettrais l'explication de ce que je fais avant de le montrer.
+-->
+
+<pre><code class="language-sql">pgbench=# show max_worker_processes ;
+ max_worker_processes 
+----------------------
+ 4
+(1 row)
+pgbench=# ALTER TABLE pgbench_accounts SET (parallel_workers=12) ;
+ALTER TABLE
+pgbench=# set max_parallel_workers =12 ;
+SET
+pgbench=# set max_parallel_workers_per_gather =12 ;
+SET
+pgbench=# EXPLAIN ANALYZE select count(aid) from pgbench_accounts where aid &gt; 100 and aid &lt; 1000000 and bid &gt; 1000 and bid &lt; 900000;
+                                                                             QUERY PLAN                                                                              
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=39153.93..39153.94 rows=1 width=8) (actual time=140.962..140.962 rows=1 loops=1)
+   -&gt;  Gather  (cost=1000.43..39153.93 rows=1 width=4) (actual time=140.956..140.956 rows=0 loops=1)
+         Workers Planned: 12
+         Workers Launched: 3
+         -&gt;  Parallel Index Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.43..38153.83 rows=1 width=4) (actual time=128.103..128.103 rows=0 loops=4)
+               Index Cond: ((aid &gt; 100) AND (aid &lt; 1000000))
+               Filter: ((bid &gt; 1000) AND (bid &lt; 900000))
+               Rows Removed by Filter: 249975
+ Planning time: 1.461 ms
+ Execution time: 143.755 ms
+(10 rows)
+</code></pre>
+
+<p>Le nombre plannifié est bien de 12, mais le nombre instancié est 3 (limité par <code>max_worker_processes</code>) car l&rsquo;instance occupe de toute façon un worker.</p>
+
+<h2 id="un-grand-pouvoir-implique">Un grand pouvoir implique&hellip;</h2>
+
+<p>Bien sûr, il s&rsquo;agit ici de choisir un paramètre en fonction de la taille de la relation tout en respectant les capacités matérielles comme je l&rsquo;ai déjà mentionné.</p>
+
+<p><strong>Ultime mise en garde</strong>, le paramétrage au niveau d&rsquo;une table en particulier sort du paramétrage général (fichier de configuration).
+<!-- JCA peut être un saut de ligne AVANT **Ultime mise en garde** ? -->
+Il faut donc bien réaliser que ce type de changement doit être documenté et suivi avec attention.
+J&rsquo;ajouterai même qu&rsquo;il est préférable de faire appel à un expert pour ce genre de pratique si vous n&rsquo;en êtes pas vous même un.
+<!-- JCA là tu dis qu'il faut faire appel à un expert mais tu as dit en intro que le public visé ici est un public d'experts ;) -->
+A bientôt dans un univers parallèle.</p>
+
+              <div class="row"></div>
+            </div>
+        </div>
+    </article>
+  </div>
+  <div class="cell three">
+    <aside>
+  
+<div class="widget-wrap">
+  <h3 class="widget-title">Notre flux</h3>
+  <div class="widget">
+        <a class="category-list-link" href="/post/index.xml">
+        <img src="/images/articles/rss.svg">
+          abonnez vous
+        </a>
+  </div>
+</div>
+
+
+  
+<div class="widget-wrap">
+  <h3 class="widget-title">
+      Articles récents
+  </h3>
+  <div class="widget">
+    <ul id="recent-post">
+      
+        <div class="item-inner">
+          <li> <a href="/post/procstock-pg11/" class="title">Les Procédures stockées dans PostgreSQL 11</a></li>
+        </div>
+      
+        <div class="item-inner">
+          <li> <a href="/post/pgday-paris-2018/" class="title">De retour de PGDay Paris</a></li>
+        </div>
+      
+        <div class="item-inner">
+          <li> <a href="/post/nordic-pgday-2018/" class="title">De retour de Nordic PGDay</a></li>
+        </div>
+      
+        <div class="item-inner">
+          <li> <a href="/post/postgresql-10.3/" class="title">PostgreSQL 10.3 et autres correctifs</a></li>
+        </div>
+      
+        <div class="item-inner">
+          <li> <a href="/post/fosdem-2018/" class="title">De retour du FOSDEM 2018</a></li>
+        </div>
+      
+    </ul>
+  </div>
+</div>
+
+
+  
+
+<div class="widget-wrap">
+  <h3 class="widget-title">Catégories</h3>
+  <div class="widget">
+    <ul class="category-list">
+      <li class="category-list-item">
+        <a class="category-list-link" href="/post/">
+          toutes
+        </a>
+        <span class="category-list-count">(65)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/formation">
+          formation
+        </a>
+        <span class="category-list-count">(5)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/loxodata">
+          loxodata
+        </a>
+        <span class="category-list-count">(1)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/technique">
+          technique
+        </a>
+        <span class="category-list-count">(29)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/veille">
+          veille
+        </a>
+        <span class="category-list-count">(21)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/%c3%a9v%c3%a9nement">
+          événement
+        </a>
+        <span class="category-list-count">(20)</span>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+
+  
+
+<div class="widget-wrap">
+    <h3 class="widget-title">
+        Mots clés
+    </h3>
+    <div class="widget">
+        <ul class="category-list">
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/administration">
+                    administration
+                </a>
+                <span class="category-list-count">(24)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/annonce">
+                    annonce
+                </a>
+                <span class="category-list-count">(21)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/automatisation">
+                    automatisation
+                </a>
+                <span class="category-list-count">(1)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/beta">
+                    beta
+                </a>
+                <span class="category-list-count">(3)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/code">
+                    code
+                </a>
+                <span class="category-list-count">(18)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/conf%c3%a9rence">
+                    conférence
+                </a>
+                <span class="category-list-count">(19)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/emploi">
+                    emploi
+                </a>
+                <span class="category-list-count">(1)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/haute-disponibilit%c3%a9">
+                    haute-disponibilité
+                </a>
+                <span class="category-list-count">(1)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/optimisation">
+                    optimisation
+                </a>
+                <span class="category-list-count">(7)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/performances">
+                    performances
+                </a>
+                <span class="category-list-count">(14)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/pr%c3%a9sentation">
+                    présentation
+                </a>
+                <span class="category-list-count">(7)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/sauvegarde">
+                    sauvegarde
+                </a>
+                <span class="category-list-count">(3)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/sql">
+                    sql
+                </a>
+                <span class="category-list-count">(3)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/s%c3%a9curit%c3%a9">
+                    sécurité
+                </a>
+                <span class="category-list-count">(9)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/veille">
+                    veille
+                </a>
+                <span class="category-list-count">(2)</span>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+
+
+</aside>
+
+<div class="row fhspace"></div>
+
+  </div>
+  </div>
+</div>
+
+<div class="row fhspace"></div>
+</div>
+
+
+
+ <div class="ontop">
+   <div class="cell twelve top">
+     <a href="#intro"><img src="/images/common/top.svg"></a>
+   </div>
+   <div class="cell twelve next">
+     <a href="#next"><img src="/images/common/next.svg"></a>
+   </div>
+ </div>
+
+ <div class="legal row justify-center align-center legal1 legal2">
+   <div class="cell two"></div>
+   <div class="cell eight legal_block">
+
+     <div class="row justify-end align-top up">
+     <div class="cell twelve text-right">
+       <img id="close" src="/images/common/wclose.png">
+     </div>
+     </div>
+
+     <div class="row justify-center align-top up">
+     <div class="cell six">
+<p>
+<b>LOXODATA</b><br/>
+SÀRL au capital de 10 000 €<br/>
+RCS Vesoul-Gray B 520 264 896<br/>
+SIRET 520-264-896 00017<br/>
+Code APE 6202A<br/>
+N° TVA Intra Com. FR01520264896
+</p>
+<p>
+Siège social: 31 rue Maurice Gillot, 70000 Navenne<br/>
+Téléphone fixe: +33 1 797 2 5775<br/>
+Directeur de la publication: Stéphane Schildknecht<br/>
+</p>
+    </div>
+     <div class="cell six">
+<p>
+Hébergeur :<br/>
+OVH SAS<br/>
+2 rue Kellermann<br/>
+59100 Roubaix - France<br/>
+RCS Lille Métropole 424 761 419 00045
+</p>
+     </div>
+     </div>
+   </div>
+   <div class="cell two"></div>
+ </div>
+
+ </div>
+ <div class="row colors colors-compressed align-bottom">
+    <div class="cell color-1"></div>
+    <div class="cell color-2"></div>
+    <div class="cell color-3"></div>
+    <div class="cell color-4"></div>
+    <div class="cell color-5"></div>
+    <div class="cell color-6"></div>
+    <div class="cell color-7"></div>
+    <div class="cell color-8"></div>
+    <div class="cell color-9"></div>
+  </div>
+
+
+  <div id="footer" class="footer row justify-center align-center">
+    <div class="row justify-left align-center">
+      <div class="cell one"></div>
+      <div class="cell five"><a href="/legal" did="1">Mentions légales</a> | © 2010-2018 LOXODATA </div>
+    </div>
+  </div>
+
+  <script src="/js/highlight.min.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.fancybox.min.js"></script>
+  <script src="/js/loxodata.min.js"></script>
+  
+  
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-66495095-1', 'auto');
+    ga('send', 'pageview');
+  </script>
+
+  
+  <script>
+
+  $(document).ready(function() {
+  
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+
+  
+  $(document.links).filter(function() {
+    return this.hostname != window.location.hostname;
+  }).attr('target', '_blank');
+  
+
+
+  
+
+  
+  
+  var anchorIndex = 0;
+  var nbAnchor = $('div[id^="section-"]').length;
+  var anchorMap = new Array();
+  for (anchorIndex = 1; anchorIndex < nbAnchor+1 ; anchorIndex++ ) {
+    var ao = $('div[id^="section-'+anchorIndex+'"]');
+    anchorMap[anchorIndex-1] = Math.ceil(ao.position().top);
+  }
+
+  
+  
+  var height=0;
+  nav_viz(height,nbAnchor);
+
+  $(window).scroll(function() {
+      height = $(window).scrollTop();
+      nav_viz(height,nbAnchor);
+  });
+
+  
+  $('a[href*="#"]:not([href="#"])').click(function() {
+    nav_scroll(this,anchorMap,height);
+  });
+
+  
+  $('.article-entry').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+
+      var alt = this.alt;
+
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+
+  if ($.fancybox){
+    $('.fancybox').fancybox();
+  }
+
+  
+  if ( isIE() ) {
+    $('.header').css('background-image','url("/images/logos/logo-fd.png")')
+    $('.footer').css('background-image','url("/images/logos/logo-fd.png")')
+  }
+
+  var class_legal = 'legal';
+  $('a[href="/legal"]').click(function() {
+    class_switch(this,class_legal);
+    class_translate(this,class_legal);
+    return false;
+  }
+  );
+  toggle_class(class_legal);
+  $('img#close').click(function(){
+    $('.legal1').toggle();
+  }
+  );
+
+  
+
+  });
+  </script>
+<script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10"></' + 'script>')</script></body>
+</html>
+

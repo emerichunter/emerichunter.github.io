@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="fr-FR">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>PostgreSQL et la parallélisation</title>
+  <meta name="description" content="Qu&#39;est-ce que la parallélisation ? Comment la paramétrer ? Que peut-on faire avec ?">
+
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,400i,700,900' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" media="all" href="/css/loxo-thimble.min.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="/css/loxodata.min.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="/css/loxokai.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="/css/jquery.fancybox.css" />
+  
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+</head>
+
+<body class="site">
+
+  <a href="/">
+  <div id="intro" class="header row justify-center align-center">
+    <div class="row justify-center align-center">
+    <div class="main-logo"></div>
+      <div class="cell fit">
+          <h1 class="h1 super-header logo">LOXODATA</h1>
+      </div>
+    </div>
+  </div>
+  </a>
+
+  <div class="page">
+
+  <div class="row colors-compressed align-bottom">
+    <div class="cell color-1"></div>
+    <div class="cell color-2"></div>
+    <div class="cell color-3"></div>
+    <div class="cell color-4"></div>
+    <div class="cell color-5"></div>
+    <div class="cell color-6"></div>
+    <div class="cell color-7"></div>
+    <div class="cell color-8"></div>
+    <div class="cell color-9"></div>
+  </div>
+
+  <div class="row justify-end align-top main">
+    
+      <div class="cell fit">
+        <a href="/#services" class="button flat">Services</a>
+        <a href="/formations/" class="button flat">Formations</a>
+        <a href="/#references" class="button flat">Références</a>
+        <a href="/#contact" class="button flat">Contact</a>
+        <a href="/post" class="button flat">Blog</a>
+      </div>
+  </div>
+
+
+<div class="row">
+  <div class="cell two"></div>
+  <div class="cell seven">
+    <article class="article article-type-post" itemscope="" itemprop="blogPost">
+        <div class="article-inner card-inner">
+            
+            <a href="/post/parallelquery1/" itemprop="url">
+                <img src="/head/elephants-family-clone.jpg" class="article-banner">
+            </a>
+            
+
+            <div class="article-header" itemprop="articleBody">
+            <h1 class="h3">PostgreSQL et la parallélisation</h1>
+            <div class="row article-details">
+              <img src="/images/articles/calendar.svg">2017-12-22 &nbsp;
+              <img src="/images/articles/words.svg">1995 mots, 10 minutes de lecture
+             &nbsp;
+              <img src="/images/articles/pencil.svg">Emeric Tabakhoff
+            
+
+            </div>
+            </div>
+
+            <div class="article-entry" itemprop="articleBody">
+              <div class="row shspace"></div>
+                
+
+<p>Avec PostgreSQL version 10 qui arrive, c&rsquo;est également davantage de parallélisme.
+Naturellement, cela fait soulever plusieurs questions&nbsp;:</p>
+
+<ul>
+<li>Que fait le parallélisme ?</li>
+<li>Quelle type de requête/tâche couvre le parallélisme ?</li>
+<li>Comment l&rsquo;utiliser ?</li>
+<li>Quel gain peut-on obtenir ?</li>
+<li>Quelles sont les limites ?</li>
+</ul>
+
+<p>Avant tout, un peu de théorie, en voyant ce que l&rsquo;on peut attendre de la parallélisation dans cette nouvelle version.
+Ensuite, après avoir pris en considération les capacités de la machine, un ajustement des paramètres pour mieux tirer partie de cette fonctionnalité.</p>
+
+<h2 id="un-peu-de-théorie">Un peu de théorie</h2>
+
+<!-- La parallélisation de requête permet de lancer plusieurs processus pour effectuer une tâche, comme son nom l'indique, en parallèle.-->
+
+<p>Une requête SQL suit un plan d&rsquo;exécution qui contient plusieurs
+étapes. Certaines d&rsquo;entre elles sont amenées à traiter une quantité
+de données importantes. Il peut donc être opportun de diviser cette
+quantité de données en parts égales afin de la faire traiter par
+plusieurs processus, en parallèle. C&rsquo;est ce que fait PostgreSQL avec
+les requêtes parallélisées.</p>
+
+<!-- JCA
+Une requête SQL suit un plan d'exécution qui contient plusieurs 
+étapes. Certaines d'entre elles sont amenées à traiter une quantité 
+de données importantes. Il peut donc être opportun de diviser cette 
+quantité de données en parts égales afin de la faire traiter par 
+plusieurs processus, en parallèle. C'est ce que fait PostgreSQL avec 
+les requêtes parallélisées.
+-->
+
+<p>En théorie, cela permet de diviser le temps d&rsquo;exécution d&rsquo;une étape par le nombre de processus lancés.</p>
+
+<!-- JCA 
+En théorie, cela permet de diviser le temps d'exécution d'une étape par le nombre de processus lancés.
+Remarque : en théorie on a aussi un nombre de processeur illimité
+-->
+
+<p>En revanche, cela multiplie d&rsquo;autant la charge (CPU et RAM) sur la machine sur laquelle s&rsquo;effectue l&rsquo;opération.</p>
+
+<!-- JCA La charge CPU ? -->
+
+<p>Voici ce que couvrait déjà le parallélisme dans la version 9.6&nbsp;:</p>
+
+<ul>
+<li>Requête (Parallel query)</li>
+<li>Scan de table entière (Parallel seqscan)</li>
+<li>Jointure et agrégat (Parallel JOIN, aggregate)</li>
+</ul>
+
+<p>Ce qui est couvert en plus dans la version 10&nbsp;:
+<!-- JCA
+Ce qui est couvert en plus dans la version 10&nbsp;:
+--></p>
+
+<ul>
+<li>Parallel bitmap heap scans</li>
+<li>Parallel B-tree index scans (inclus Index Only Scan)</li>
+<li>Parallel merge joins</li>
+</ul>
+
+<h2 id="configuration-par-défaut">Configuration par défaut</h2>
+
+<p>Selon la documentation, l&rsquo;activation du parallélisme ne nécessite que 2 paramètres&nbsp;:</p>
+
+<ul>
+<li><code>max_parallel_workers_per_gather</code> postitionné à 2 ou plus (2 étant la valeur par défaut)</li>
+<li><code>dynamic_shared_memory_type</code> positionné à une valeur différente de <code>none</code> (<code>posix</code> par défaut)</li>
+</ul>
+
+<p><strong>La parallélisation est donc réglée à 2 processus par défaut.</strong></p>
+
+<h2 id="test-out-of-the-box">Test &ldquo;out of the box&rdquo;</h2>
+
+<!--JCA
+Pour pouvoir observer le parallélisme, initialisons...
+-->
+
+<p>Initialisation d&rsquo;une base avec pgbench, pour observer le parallélisme</p>
+
+<pre><code class="language-bash">createdb pgbench
+pgbench -i -s 100 pgbench
+</code></pre>
+
+<pre><code class="language-sql">pgbench=# \dt+ public.*
+                          List of relations
+ Schema |      Name       | Type  |  Owner   |  Size   | Description
+--------+------------------+-------+----------+---------+-------------
+ public | pgbench_accounts | table | postgres | 1281 MB |
+ public | pgbench_branches | table | postgres | 40 kB   |
+ public | pgbench_history  | table | postgres | 0 bytes |
+ public | pgbench_tellers  | table | postgres | 80 kB   |
+(4 rows)
+
+pgbench=# select count(*) FROM pgbench_accounts ;
+  count
+---------
+ 1000000
+(1 row)
+</code></pre>
+
+<p>Testons une requête dans la base que nous venons de créer.</p>
+
+<pre><code class="language-sql">pgbench=# EXPLAIN select count(*) FROM pgbench_accounts ;
+                                                              QUERY PLAN
+---------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=22188.97..22188.98 rows=1 width=8)
+   -&gt;  Gather  (cost=22188.76..22188.97 rows=2 width=8)
+         Workers Planned: 2
+         -&gt;  Partial Aggregate  (cost=21188.76..21188.77 rows=1 width=8)
+               -&gt;  Parallel Index Only Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.42..20147.09 rows=416667 width=0)
+(5 rows)
+</code></pre>
+
+<p>Nous pouvons observer 2 <em>workers</em> planifiés dans le plan d&rsquo;exécution, <strong>sans rien modifier</strong>.
+Un <em>worker</em> est une unité d&rsquo;exécution parallèle pour une étape du plan de requêtage.
+Nous verrons plus loin que s&rsquo;il est planifié, il ne sera pas nécessairement lancé.</p>
+
+<!-- JCA
+Nous pouvons également qu'ils sont plannifiés, nous verrons plus loin 
+que cette planification n'est pas forcément suivie, dans les faits.
+
+Un _worker_ est une unité d'exécution parallèle pour une étape du 
+plan requêtage. 
+
+Question : pourquoi pas d'explain analyse,verbose ici ? => Ok on en parle par la 
+suite
+-->
+
+<h2 id="premier-ajustement">Premier ajustement</h2>
+
+<p>Maintenant, adaptons la configuration à notre machine de test&nbsp;: c&rsquo;est à dire pour 4 CPU, 4 processus parallèles.</p>
+
+<p>Voici la modification du <code>postgresql.conf</code></p>
+
+<pre><code class="language-sql">max_parallel_workers_per_gather = 4     # taken from max_parallel_workers
+max_parallel_workers = 4                # maximum number of max_worker_processes that
+                                        # can be used in parallel queries
+</code></pre>
+
+<ul>
+<li><code>max_parallel_workers</code> définit le nombre total de <em>worker</em> pour les requêtes parallèles parmi le nombre maximum de <em>worker</em> de l&rsquo;instance définit par <code>max_worker_processes</code>.</li>
+<li><code>max_parallel_workers_per_gather</code> définit le nombre maximum de <em>workers</em> par étape parallélisable du plan.</li>
+</ul>
+
+<!-- JCA
+Ici apparaît la clé de configuration `max_parallel_workers` dont le 
+but est de limiter le nombre total de _workers_ pour les requêtes. 
+Alors que le paramètre `max_parallel_workers_per_gather` définit le 
+nombre maximum de _workers_ par étape parallélisable du plan.
+-->
+
+<h2 id="rechargement-de-la-configuration">Rechargement de la configuration</h2>
+
+<p>Pour prendre en compte les modifications apportées à la configuration, on doit la recharger&nbsp;:</p>
+
+<pre><code class="language-sql">pgbench=# SELECT pg_reload_conf();
+</code></pre>
+
+<h2 id="quelques-exemples">Quelques exemples</h2>
+
+<!-- JCA
+Idem ici, pourquoi pas les ANALYZE,VERBOSE ? => Ok on en parle par la 
+suite
+-->
+
+<h3 id="parallel-index-only-scan">Parallel Index Only Scan</h3>
+
+<pre><code class="language-sql">pgbench=# EXPLAIN select count(*) FROM pgbench_accounts ;
+                                                              QUERY PLAN
+---------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=20105.84..20105.85 rows=1 width=8)
+   -&gt;  Gather  (cost=20105.42..20105.83 rows=4 width=8)
+         Workers Planned: 4
+         -&gt;  Partial Aggregate  (cost=19105.42..19105.43 rows=1 width=8)
+               -&gt;  Parallel Index Only Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.42..18480.42 rows=250000 width=0)
+(5 rows)
+</code></pre>
+
+<h3 id="parallel-seq-scan">Parallel Seq Scan</h3>
+
+<pre><code class="language-sql">pgbench=# EXPLAIN select * FROM pgbench_accounts where bid = 1000 ;
+                                     QUERY PLAN
+------------------------------------------------------------------------------------
+ Gather  (cost=1000.00..21426.36 rows=1 width=97)
+   Workers Planned: 3
+   -&gt;  Parallel Seq Scan on pgbench_accounts  (cost=0.00..20426.26 rows=1 width=97)
+         Filter: (bid = 1000)
+(4 rows)
+</code></pre>
+
+<p>Ici, on peut observer seulement 3 <em>workers</em> planifiés&nbsp;: nous y reviendrons dans la partie <a href="#limites">Limites</a>.</p>
+
+<!-- JCA
+Ici, on peut observer que seulement 3 _workers_ ont été planifiés, nous y reviendons dans la partie [Limites](#limites).
+-->
+
+<h3 id="parallel-index-scan">Parallel Index Scan</h3>
+
+<!-- JCA
+La partie sans parallélisation est à mon sens inutile, ou tout du 
+moins incohérente avec ce qu'on a fait au dessus vu qu'on n'a pas fait 
+de «comparatif» avec / sans pour les autres.
+-->
+
+<!--
+Sans parallélisation&nbsp;:
+~~~sql
+pgbench=# EXPLAIN select count(aid) from pgbench_accounts where aid > 100 and aid < 1000000 and bid > 1000 and bid < 900000;
+                                               QUERY PLAN                                               
+--------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=52637.36..52637.37 rows=1 width=8)
+   ->  Index Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.43..52637.36 rows=1 width=4)
+         Index Cond: ((aid > 100) AND (aid < 1000000))
+         Filter: ((bid > 1000) AND (bid < 900000))
+(4 rows)
+
+
+~~~
+-->
+
+<p>Avec la parallélisation&nbsp;:</p>
+
+<pre><code class="language-sql">pgbench=# EXPLAIN select count(aid) from pgbench_accounts where aid &gt; 100 and aid &lt; 1000000 and bid &gt; 1000 and bid &lt; 900000;
+                                                      QUERY PLAN                                                       
+-----------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=42329.90..42329.91 rows=1 width=8)
+   -&gt;  Gather  (cost=1000.43..42329.89 rows=1 width=4)
+         Workers Planned: 4
+         -&gt;  Parallel Index Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.43..41329.79 rows=1 width=4)
+               Index Cond: ((aid &gt; 100) AND (aid &lt; 1000000))
+               Filter: ((bid &gt; 1000) AND (bid &lt; 900000))
+(6 rows)
+
+
+</code></pre>
+
+<!-- Pourquoi le mentionner si on ne l'utilise pas du tout ?
+## Paramètrage 
+
+Voici la liste des paramètres de sur lesquels nous pouvons jouer pour déclencher ou augmenter la parallélisation.
+
+~~~sql
+pgbench=# select name, setting, short_desc from pg_settings where name ~ 'parallel';
+ force_parallel_mode             | off     | Forces use of parallel query facilities.
+ max_parallel_workers            | 4       | Sets the maximum number of parallel workers than can be active at one time.
+ max_parallel_workers_per_gather | 4       | Sets the maximum number of parallel processes per executor node.
+ min_parallel_index_scan_size    | 512kB   | Sets the minimum amount of index data for a parallel scan.
+ min_parallel_table_scan_size    | 8MB     | Sets the minimum amount of table data for a parallel scan.
+ parallel_setup_cost             | 1000    | Sets the planner's estimate of the cost of starting up worker processes for parallel query.
+ parallel_tuple_cost             | 0.1     | Sets the planner's estimate of the cost of passing each tuple (row) from worker to master backend.
+~~~
+
+* `force_parallel_mode`&nbsp;: Force l'utilisation des requêtes parllélisées.
+* **`max_parallel_workers`**&nbsp;: _C'est un nouveau paramètre en version 10_. Configure le nombre maximum de _workers_ parallèles actifs au même instant.
+* `max_parallel_workers_per_gather`&nbsp;: Configure le nombre maximum de processus parallèles par nœud executeur.
+* **`min_parallel_index_scan_size`**&nbsp;: Remplace `min_parallel_relation_size`. Configure la taille minimum des données de l'index pour un scan parallèle.
+* **`min_parallel_table_scan_size`**&nbsp;: Configure la taille minimum des données de la table pour un scan parallèle.
+* `parallel_setup_cost`&nbsp;: Configure le coût du démarrage des processus _workers_ des requêtes parallèles pour le planner.
+* `parallel_tuple_cost` &nbsp;: Configure le coût du passage de chaque tuple du _worker_ au programme principal.
+
+-->
+
+<h2 id="explain-analyze-verbose-pour-obtenir-le-détail-de-chaque-worker">EXPLAIN ANALYZE VERBOSE pour obtenir le détail de chaque worker</h2>
+
+<!-- JCA
+Nous avons parlé plus haut du fait que les _workers_ étaient 
+planifiés, mais est-ce que dans les faits, cette planification est 
+bien suivie ? Pour le savoir, il suffit d'utiliser les options `(ANALYZE, 
+VERBOSE)` de la commande `EXPLAIN`.-->
+
+<p>Nous avons parlé plus haut du fait que les <em>workers</em> étaient
+planifiés, mais est-ce que dans les faits, cette planification est
+bien suivie ? Pour le savoir, il suffit d&rsquo;utiliser les options <code>(ANALYZE, 
+VERBOSE)</code> de la commande <code>EXPLAIN</code>.</p>
+
+<pre><code class="language-sql">pgbench=# EXPLAIN (ANALYZE, VERBOSE) select aid,bid FROM pgbench_accounts where aid &gt; 10000 and bid&gt; 1000 and bid \&lt;100000;
+                                                                QUERY PLAN                                                                 
+-------------------------------------------------------------------------------------------------------------------------------------------
+ Gather  (cost=1000.00..208685.10 rows=1 width=8) (actual time=2650.805..2650.805 rows=0 loops=1)
+   Output: aid, bid
+   Workers Planned: 4
+   Workers Launched: 4
+   -&gt;  Parallel Seq Scan on public.pgbench_accounts  (cost=0.00..207685.00 rows=1 width=8) (actual time=2627.557..2627.557 rows=0 loops=5)
+         Output: aid, bid
+         Filter: ((pgbench_accounts.aid &gt; 10000) AND (pgbench_accounts.bid &gt; 1000) AND (pgbench_accounts.bid \&lt; 100000))
+         Rows Removed by Filter: 2000000
+         Worker 0: actual time=2624.376..2624.376 rows=0 loops=1
+         Worker 1: actual time=2624.425..2624.425 rows=0 loops=1
+         Worker 2: actual time=2621.906..2621.906 rows=0 loops=1
+         Worker 3: actual time=2621.377..2621.377 rows=0 loops=1
+ Planning time: 2.391 ms
+ Execution time: 2654.363 ms
+(14 rows)
+
+</code></pre>
+
+<h3 id="agrégat">Agrégat</h3>
+
+<p>Sans parallélisation&nbsp;:</p>
+
+<pre><code class="language-sql">pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOIN pgbench_tellers t ON a.bid= t.bid  ;
+                                                                     QUERY PLAN
+----------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=1663963.48..1663963.49 rows=1 width=8) (actual time=15186.597..15186.597 rows=1 loops=1)
+   Output: count(*)
+   -&gt;  Hash Join  (cost=28.50..1413963.48 rows=99999998 width=0) (actual time=1.822..9736.886 rows=100000000 loops=1)
+         Hash Cond: (a.bid = t.bid)
+         -&gt;  Seq Scan on public.pgbench_accounts a  (cost=0.00..263935.00 rows=10000000 width=4) (actual time=0.090..971.920 rows=10000000 loops=1)
+               Output: a.aid, a.bid, a.abalance, a.filler
+         -&gt;  Hash  (cost=16.00..16.00 rows=1000 width=4) (actual time=1.699..1.699 rows=1000 loops=1)
+               Output: t.bid
+               Buckets: 1024  Batches: 1  Memory Usage: 44kB
+               -&gt;  Seq Scan on public.pgbench_tellers t  (cost=0.00..16.00 rows=1000 width=4) (actual time=0.074..0.795 rows=1000 loops=1)
+                     Output: t.bid
+ Planning time: 0.614 ms
+ Execution time: 15186.707 ms
+(13 rows)
+</code></pre>
+
+<p>Avec parallélisation&nbsp;:</p>
+
+<pre><code class="language-sql">pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOIN pgbench_tellers t ON a.bid= t.bid  ;
+                                                                              QUERY PLAN
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=539063.55..539063.56 rows=1 width=8) (actual time=8150.517..8150.517 rows=1 loops=1)
+   Output: count(*)
+   -&gt;  Gather  (cost=539063.49..539063.54 rows=4 width=8) (actual time=8150.501..8150.510 rows=5 loops=1)
+         Output: (PARTIAL count(*))
+         Workers Planned: 4
+         Workers Launched: 4
+         -&gt;  Partial Aggregate  (cost=538963.49..538963.50 rows=1 width=8) (actual time=8136.814..8136.814 rows=1 loops=5)
+               Output: PARTIAL count(*)
+               Worker 0: actual time=8133.955..8133.955 rows=1 loops=1
+               Worker 1: actual time=8135.044..8135.045 rows=1 loops=1
+               Worker 2: actual time=8127.795..8127.796 rows=1 loops=1
+               Worker 3: actual time=8137.604..8137.604 rows=1 loops=1
+               -&gt;  Hash Join  (cost=28.50..476463.49 rows=25000000 width=0) (actual time=5.818..5172.453 rows=20000000 loops=5)
+                     Hash Cond: (a.bid = t.bid)
+                     Worker 0: actual time=3.222..5162.964 rows=19102760 loops=1
+                     Worker 1: actual time=3.056..5225.835 rows=19798160 loops=1
+                     Worker 2: actual time=3.383..5207.638 rows=21981960 loops=1
+                     Worker 3: actual time=17.254..5126.673 rows=17479810 loops=1
+                     -&gt;  Parallel Seq Scan on public.pgbench_accounts a  (cost=0.00..188935.00 rows=2500000 width=4) (actual time=0.043..460.342 rows=2000000 loops=5)
+                           Output: a.aid, a.bid, a.abalance, a.filler
+                           Worker 0: actual time=0.025..489.930 rows=1910276 loops=1
+                           Worker 1: actual time=0.027..448.600 rows=1979816 loops=1
+                           Worker 2: actual time=0.119..456.790 rows=2198196 loops=1
+                           Worker 3: actual time=0.027..454.902 rows=1747981 loops=1
+                     -&gt;  Hash  (cost=16.00..16.00 rows=1000 width=4) (actual time=2.103..2.103 rows=1000 loops=5)
+                           Output: t.bid
+                           Buckets: 1024  Batches: 1  Memory Usage: 44kB
+                           Worker 0: actual time=2.398..2.398 rows=1000 loops=1
+                           Worker 1: actual time=2.187..2.187 rows=1000 loops=1
+                           Worker 2: actual time=2.490..2.490 rows=1000 loops=1
+                           Worker 3: actual time=1.316..1.316 rows=1000 loops=1
+                           -&gt;  Seq Scan on public.pgbench_tellers t  (cost=0.00..16.00 rows=1000 width=4) (actual time=0.038..0.940 rows=1000 loops=5)
+                                 Output: t.bid
+                                 Worker 0: actual time=0.042..1.096 rows=1000 loops=1
+                                 Worker 1: actual time=0.056..1.032 rows=1000 loops=1
+                                 Worker 2: actual time=0.042..1.064 rows=1000 loops=1
+                                 Worker 3: actual time=0.032..0.601 rows=1000 loops=1
+ Planning time: 0.587 ms
+ Execution time: 8154.206 ms
+(39 rows)
+</code></pre>
+
+<p>Le temps d&rsquo;exécution est seulement divisé par 2 malgré le nombre de <code>workers</code> porté à 4.
+Voici le résultat pour la meme requête avec le paramétrage par défaut&nbsp;:</p>
+
+<pre><code class="language-sql">pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOIN pgbench_tellers t ON a.bid= t.bid  ;
+                                                                              QUERY PLAN
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=789963.74..789963.75 rows=1 width=8) (actual time=8088.269..8088.270 rows=1 loops=1)
+   Output: count(*)
+   -&gt;  Gather  (cost=789963.53..789963.74 rows=2 width=8) (actual time=8088.248..8088.263 rows=3 loops=1)
+         Output: (PARTIAL count(*))
+         Workers Planned: 2
+         Workers Launched: 2
+         -&gt;  Partial Aggregate  (cost=788963.53..788963.54 rows=1 width=8) (actual time=8079.017..8079.017 rows=1 loops=3)
+               Output: PARTIAL count(*)
+               Worker 0: actual time=8074.162..8074.162 rows=1 loops=1
+               Worker 1: actual time=8075.583..8075.583 rows=1 loops=1
+               -&gt;  Hash Join  (cost=28.50..684796.86 rows=41666666 width=0) (actual time=2.636..5170.125 rows=33333333 loops=3)
+                     Hash Cond: (a.bid = t.bid)
+                     Worker 0: actual time=3.340..5135.878 rows=45583470 loops=1
+                     Worker 1: actual time=2.933..5168.344 rows=28670260 loops=1
+                     -&gt;  Parallel Seq Scan on public.pgbench_accounts a  (cost=0.00..205601.67 rows=4166667 width=4) (actual time=0.081..467.744 rows=3333333 loops=3)
+                           Output: a.aid, a.bid, a.abalance, a.filler
+                           Worker 0: actual time=0.094..540.870 rows=4558347 loops=1
+                           Worker 1: actual time=0.094..436.167 rows=2867026 loops=1
+                     -&gt;  Hash  (cost=16.00..16.00 rows=1000 width=4) (actual time=1.990..1.990 rows=1000 loops=3)
+                           Output: t.bid
+                           Buckets: 1024  Batches: 1  Memory Usage: 44kB
+                           Worker 0: actual time=2.415..2.415 rows=1000 loops=1
+                           Worker 1: actual time=2.059..2.059 rows=1000 loops=1
+                           -&gt;  Seq Scan on public.pgbench_tellers t  (cost=0.00..16.00 rows=1000 width=4) (actual time=0.055..0.930 rows=1000 loops=3)
+                                 Output: t.bid
+                                 Worker 0: actual time=0.061..1.093 rows=1000 loops=1
+                                 Worker 1: actual time=0.064..0.959 rows=1000 loops=1
+ Planning time: 2.373 ms
+ Execution time: 8090.127 ms
+(29 rows)
+</code></pre>
+
+<p>Le temps d&rsquo;exécution est identique.</p>
+
+<h2 id="limites">LIMITES</h2>
+
+<p>Le nombre de processus instanciés est conditionné par un cœfficient fixe (progression géométrique) non publié dans la documentation mais mentionné dans le code de PostgreSQL
+et dans certains articles anglophones comme <a href="https://blog.2ndquadrant.com/postgresql96-parallel-sequential-scan/">ici</a>.</p>
+
+<p>commit : <a href="https://github.com/postgres/postgres/commit/51ee6f3160d2e1515ed6197594bda67eb99dc2cc">ici</a></p>
+
+<p>fichiers :</p>
+
+<ul>
+<li>src/backend/optimizer/path/allpaths.c (lignes 2919-2955)</li>
+<li>src/backend/utils/misc/guc.c (ligne 2785)</li>
+</ul>
+
+<!-- JCA
+IIRC : parallel_setup_cost et parallel_tuple_cost sont de la partie, 
+surtout le premier.
+C'est documenté là : https://www.postgresql.org/docs/10/static/runtime-config-query.html
+
+parallel_setup_cost (floating point)
+
+    Sets the planner's estimate of the cost of launching parallel worker processes. The default is 1000.
+parallel_tuple_cost (floating point)
+
+    Sets the planner's estimate of the cost of transferring one tuple from a parallel worker process to another process. The default is 0.1.
+min_parallel_table_scan_size (integer)
+
+    Sets the minimum amount of table data that must be scanned in order for a parallel scan to be considered. For a parallel sequential scan, the amount of table data scanned is always equal to the size of the table, but when indexes are used the amount of table data scanned will normally be less. The default is 8 megabytes (8MB).
+min_parallel_index_scan_size (integer)
+
+    Sets the minimum amount of index data that must be scanned in order for a parallel scan to be considered. Note that a parallel index scan typically won't touch the entire index; it is the number of pages which the planner believes will actually be touched by the scan which is relevant. The default is 512 kilobytes (512kB).
+
+Vu ensemble, c'est bien le min_parallel_*_size qui determine le nombre de worker
+-->
+
+<p>Ce nombre est fonction de la taille minimale de l&rsquo;objet considéré (index ou table) avec les paramètres <code>min_parallel_index_scan_size</code> et <code>min_parallel_table_scan_size</code>.
+Prenons une table de moins de 8Mo (paramètre par défaut), en dessous de cette limite aucun <em>worker</em> ne sera déclenché.
+<!-- JCA en dessous de cette limite aucun _worker_ ne sera déclenché -->
+Entre 8 et 24Mo (3x8), 1 <em>worker</em>, entre 24 et 72Mo (3x24), 2 <em>workers</em> et ainsi de suite&hellip;
+C&rsquo;est pour celà que vous n&rsquo;aurez pas nécessairement le nombre maximum de processus déclenchés à chaque requête car celui-ci dépend de la taille de la relation.
+Vous pouvez très bien jouer sur ces limites pour déclencher plus de worker (diminuer la taille minimale) et consommer plus de ressources ou au contraire augmenter la limite pour en déclencher moins et
+ainsi consommer moins de ressources (<a href="#parallel-seq-scan">retour aux exemples</a>).
+Il est bien sûr toujours préférable de tester à chaque changement de paramètre pour isoler la modification du comportement un à un pour chaque paramètre.</p>
+
+<p><strong>Important</strong>&nbsp;: Le nombre de processus total de l&rsquo;instance (parallèle et non-parallèle) est limité par <code>max_worker_processes</code>, celui-ci n&rsquo;est modifiable qu&rsquo;avec redémarrage de l&rsquo;instance.
+Il sert donc dans ce cas de garde fou, tant que celui-ci est raisonnablement positionné évidemment.
+Lorsque l&rsquo;on joue avec les paramètres pour augmenter la parallélisation, il faut tenir compte de cette limite dure sans quoi, dans le cas de connexions concurrentes importantes,
+l&rsquo;accès à la parallélisation sera limité.</p>
+
+<!-- JCA
+peut être également parler du rôle de max_worker_processes pour la réplication, il faut en tenir compte car la réplication consomme du worker, ici ou au dessous comme tu le veux.
+-->
+
+<h2 id="quelques-conseils-pour-bien-démarrer">Quelques conseils pour bien démarrer</h2>
+
+<p>Pour un bon <strong>réglage de départ de l&rsquo;instance</strong>, je vous conseille de partir sur
+<a href="https://www.postgresql.org/docs/current/static/runtime-config-resource.html#GUC-MAX-PARALLEL-WORKERS-PER-GATHER"><code>max_parallel_workers_per_gather</code></a>
+égalant le nombre de cœurs (virtuels ou non). 1 <em>worker</em> par CPU.
+Vous pouvez régler <a href="https://www.postgresql.org/docs/current/static/runtime-config-resource.html#GUC-MAX-PARALLEL-WORKERS-PER-GATHER"><code>max_parallel_workers_per_gather</code></a> avec une valeur égale ou inférieure à
+<a href="https://www.postgresql.org/docs/current/static/runtime-config-resource.html#GUC-MAX-WORKER-PROCESSES"><code>max_worker_processes</code></a> dans le fichier de configuration <code>postgresql.conf</code>.</p>
+
+<p>Remarque&nbsp;: si l&rsquo;architecture sur laquelle vous travaillez comporte de la réplication, c&rsquo;est un processus supplémentaire pour l&rsquo;instance à chaque réplica.
+Dans ce cas, je vous conseille de retirer autant de process autorisé par <a href="https://www.postgresql.org/docs/current/static/runtime-config-resource.html#GUC-MAX-WORKER-PROCESSES"><code>max_worker_processes</code></a> que vous avez de réplica.</p>
+
+<blockquote>
+<p>Exemple&nbsp;: 8 CPUs - 2 réplicas = 6 <code>max_worker_processes</code> et entre 2 et 6 pour <code>max_parallel_workers_per_gather</code>.</p>
+</blockquote>
+
+<p>Si vous souhaitez désactiver totalement ou limiter l&rsquo;utilisation de cette fonctionnalité, il suffit de passer le premier paramètre à 0 (une valeur de 1 instancie un worker en lançant la parallélisation ce qui pour s&rsquo;avérer couteux).</p>
+
+<p><strong>Rappel</strong>&nbsp;: ce paramètre se recharge avec <code>reload</code> sans redémarrer l&rsquo;instance.
+<!-- JCA
+Je ne suis personnellement pas fan de "si vous êtes un expert"... car les gens qui lisent ces papiers ne le sont pas spécialement... Je garderai, le si vous en voulez plus ;-)
+-->
+Si c&rsquo;est assez pour vous, c&rsquo;est ici la fin de ce post.
+Si vous en voulez plus et que ce qui a été dit ici n&rsquo;est pas suffisant pour vous, la suite au prochain numéro&nbsp;!</p>
+
+<p>A vos marques, prêts&hellip; Parallélisez&nbsp;!</p>
+
+              <div class="row"></div>
+            </div>
+        </div>
+    </article>
+  </div>
+  <div class="cell three">
+    <aside>
+  
+<div class="widget-wrap">
+  <h3 class="widget-title">Notre flux</h3>
+  <div class="widget">
+        <a class="category-list-link" href="/post/index.xml">
+        <img src="/images/articles/rss.svg">
+          abonnez vous
+        </a>
+  </div>
+</div>
+
+
+  
+<div class="widget-wrap">
+  <h3 class="widget-title">
+      Articles récents
+  </h3>
+  <div class="widget">
+    <ul id="recent-post">
+      
+        <div class="item-inner">
+          <li> <a href="/post/procstock-pg11/" class="title">Les Procédures stockées dans PostgreSQL 11</a></li>
+        </div>
+      
+        <div class="item-inner">
+          <li> <a href="/post/pgday-paris-2018/" class="title">De retour de PGDay Paris</a></li>
+        </div>
+      
+        <div class="item-inner">
+          <li> <a href="/post/nordic-pgday-2018/" class="title">De retour de Nordic PGDay</a></li>
+        </div>
+      
+        <div class="item-inner">
+          <li> <a href="/post/postgresql-10.3/" class="title">PostgreSQL 10.3 et autres correctifs</a></li>
+        </div>
+      
+        <div class="item-inner">
+          <li> <a href="/post/fosdem-2018/" class="title">De retour du FOSDEM 2018</a></li>
+        </div>
+      
+    </ul>
+  </div>
+</div>
+
+
+  
+
+<div class="widget-wrap">
+  <h3 class="widget-title">Catégories</h3>
+  <div class="widget">
+    <ul class="category-list">
+      <li class="category-list-item">
+        <a class="category-list-link" href="/post/">
+          toutes
+        </a>
+        <span class="category-list-count">(65)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/formation">
+          formation
+        </a>
+        <span class="category-list-count">(5)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/loxodata">
+          loxodata
+        </a>
+        <span class="category-list-count">(1)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/technique">
+          technique
+        </a>
+        <span class="category-list-count">(29)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/veille">
+          veille
+        </a>
+        <span class="category-list-count">(21)</span>
+      </li>
+      
+      <li class="category-list-item">
+        <a class="category-list-link" href="/categories/%c3%a9v%c3%a9nement">
+          événement
+        </a>
+        <span class="category-list-count">(20)</span>
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+
+  
+
+<div class="widget-wrap">
+    <h3 class="widget-title">
+        Mots clés
+    </h3>
+    <div class="widget">
+        <ul class="category-list">
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/administration">
+                    administration
+                </a>
+                <span class="category-list-count">(24)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/annonce">
+                    annonce
+                </a>
+                <span class="category-list-count">(21)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/automatisation">
+                    automatisation
+                </a>
+                <span class="category-list-count">(1)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/beta">
+                    beta
+                </a>
+                <span class="category-list-count">(3)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/code">
+                    code
+                </a>
+                <span class="category-list-count">(18)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/conf%c3%a9rence">
+                    conférence
+                </a>
+                <span class="category-list-count">(19)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/emploi">
+                    emploi
+                </a>
+                <span class="category-list-count">(1)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/haute-disponibilit%c3%a9">
+                    haute-disponibilité
+                </a>
+                <span class="category-list-count">(1)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/optimisation">
+                    optimisation
+                </a>
+                <span class="category-list-count">(7)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/performances">
+                    performances
+                </a>
+                <span class="category-list-count">(14)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/pr%c3%a9sentation">
+                    présentation
+                </a>
+                <span class="category-list-count">(7)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/sauvegarde">
+                    sauvegarde
+                </a>
+                <span class="category-list-count">(3)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/sql">
+                    sql
+                </a>
+                <span class="category-list-count">(3)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/s%c3%a9curit%c3%a9">
+                    sécurité
+                </a>
+                <span class="category-list-count">(9)</span>
+            </li>
+            
+            <li class="category-list-item">
+                <a class="category-list-link" href="/tags/veille">
+                    veille
+                </a>
+                <span class="category-list-count">(2)</span>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+
+
+</aside>
+
+<div class="row fhspace"></div>
+
+  </div>
+  </div>
+</div>
+
+<div class="row fhspace"></div>
+</div>
+
+
+
+ <div class="ontop">
+   <div class="cell twelve top">
+     <a href="#intro"><img src="/images/common/top.svg"></a>
+   </div>
+   <div class="cell twelve next">
+     <a href="#next"><img src="/images/common/next.svg"></a>
+   </div>
+ </div>
+
+ <div class="legal row justify-center align-center legal1 legal2">
+   <div class="cell two"></div>
+   <div class="cell eight legal_block">
+
+     <div class="row justify-end align-top up">
+     <div class="cell twelve text-right">
+       <img id="close" src="/images/common/wclose.png">
+     </div>
+     </div>
+
+     <div class="row justify-center align-top up">
+     <div class="cell six">
+<p>
+<b>LOXODATA</b><br/>
+SÀRL au capital de 10 000 €<br/>
+RCS Vesoul-Gray B 520 264 896<br/>
+SIRET 520-264-896 00017<br/>
+Code APE 6202A<br/>
+N° TVA Intra Com. FR01520264896
+</p>
+<p>
+Siège social: 31 rue Maurice Gillot, 70000 Navenne<br/>
+Téléphone fixe: +33 1 797 2 5775<br/>
+Directeur de la publication: Stéphane Schildknecht<br/>
+</p>
+    </div>
+     <div class="cell six">
+<p>
+Hébergeur :<br/>
+OVH SAS<br/>
+2 rue Kellermann<br/>
+59100 Roubaix - France<br/>
+RCS Lille Métropole 424 761 419 00045
+</p>
+     </div>
+     </div>
+   </div>
+   <div class="cell two"></div>
+ </div>
+
+ </div>
+ <div class="row colors colors-compressed align-bottom">
+    <div class="cell color-1"></div>
+    <div class="cell color-2"></div>
+    <div class="cell color-3"></div>
+    <div class="cell color-4"></div>
+    <div class="cell color-5"></div>
+    <div class="cell color-6"></div>
+    <div class="cell color-7"></div>
+    <div class="cell color-8"></div>
+    <div class="cell color-9"></div>
+  </div>
+
+
+  <div id="footer" class="footer row justify-center align-center">
+    <div class="row justify-left align-center">
+      <div class="cell one"></div>
+      <div class="cell five"><a href="/legal" did="1">Mentions légales</a> | © 2010-2018 LOXODATA </div>
+    </div>
+  </div>
+
+  <script src="/js/highlight.min.js"></script>
+  <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery.fancybox.min.js"></script>
+  <script src="/js/loxodata.min.js"></script>
+  
+  
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-66495095-1', 'auto');
+    ga('send', 'pageview');
+  </script>
+
+  
+  <script>
+
+  $(document).ready(function() {
+  
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+
+  
+  $(document.links).filter(function() {
+    return this.hostname != window.location.hostname;
+  }).attr('target', '_blank');
+  
+
+
+  
+
+  
+  
+  var anchorIndex = 0;
+  var nbAnchor = $('div[id^="section-"]').length;
+  var anchorMap = new Array();
+  for (anchorIndex = 1; anchorIndex < nbAnchor+1 ; anchorIndex++ ) {
+    var ao = $('div[id^="section-'+anchorIndex+'"]');
+    anchorMap[anchorIndex-1] = Math.ceil(ao.position().top);
+  }
+
+  
+  
+  var height=0;
+  nav_viz(height,nbAnchor);
+
+  $(window).scroll(function() {
+      height = $(window).scrollTop();
+      nav_viz(height,nbAnchor);
+  });
+
+  
+  $('a[href*="#"]:not([href="#"])').click(function() {
+    nav_scroll(this,anchorMap,height);
+  });
+
+  
+  $('.article-entry').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+
+      var alt = this.alt;
+
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+
+  if ($.fancybox){
+    $('.fancybox').fancybox();
+  }
+
+  
+  if ( isIE() ) {
+    $('.header').css('background-image','url("/images/logos/logo-fd.png")')
+    $('.footer').css('background-image','url("/images/logos/logo-fd.png")')
+  }
+
+  var class_legal = 'legal';
+  $('a[href="/legal"]').click(function() {
+    class_switch(this,class_legal);
+    class_translate(this,class_legal);
+    return false;
+  }
+  );
+  toggle_class(class_legal);
+  $('img#close').click(function(){
+    $('.legal1').toggle();
+  }
+  );
+
+  
+
+  });
+  </script>
+<script data-no-instant>document.write('<script src="/livereload.js?port=1313&mindelay=10"></' + 'script>')</script></body>
+</html>
+
