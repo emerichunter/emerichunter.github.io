@@ -68,6 +68,7 @@ Test “out of the box”
 
 Initialisation d’une base avec pgbench, pour observer le parallélisme
 
+~~~~sql
 createdb pgbench
 pgbench -i -s 100 pgbench
 
@@ -86,9 +87,11 @@ pgbench=# select count(*) FROM pgbench_accounts ;
 ---------
  1000000
 (1 row)
+~~~~
 
 Testons une requête dans la base que nous venons de créer.
 
+~~~~sql
 pgbench=# EXPLAIN select count(*) FROM pgbench_accounts ;
                                                               QUERY PLAN
 ---------------------------------------------------------------------------------------------------------------------------------------
@@ -98,6 +101,7 @@ pgbench=# EXPLAIN select count(*) FROM pgbench_accounts ;
          ->  Partial Aggregate  (cost=21188.76..21188.77 rows=1 width=8)
                ->  Parallel Index Only Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.42..20147.09 rows=416667 width=0)
 (5 rows)
+~~~~
 
 Nous pouvons observer 2 workers planifiés dans le plan d’exécution, sans rien modifier. Un worker est une unité d’exécution parallèle pour une étape du plan de requêtage. Nous verrons plus loin que s’il est planifié, il ne sera pas nécessairement lancé.
 Premier ajustement
@@ -106,22 +110,24 @@ Maintenant, adaptons la configuration à notre machine de test : c’est à dire
 
 Voici la modification du postgresql.conf
 
+~~~~
 max_parallel_workers_per_gather = 4     # taken from max_parallel_workers
 max_parallel_workers = 4                # maximum number of max_worker_processes that
                                         # can be used in parallel queries
-
+~~~~
     max_parallel_workers définit le nombre total de worker pour les requêtes parallèles parmi le nombre maximum de worker de l’instance définit par max_worker_processes.
     max_parallel_workers_per_gather définit le nombre maximum de workers par étape parallélisable du plan.
 
 Rechargement de la configuration
 
 Pour prendre en compte les modifications apportées à la configuration, on doit la recharger :
-
+~~~~sql
 pgbench=# SELECT pg_reload_conf();
+~~~~
 
 Quelques exemples
 Parallel Index Only Scan
-
+~~~~sql
 pgbench=# EXPLAIN select count(*) FROM pgbench_accounts ;
                                                               QUERY PLAN
 ---------------------------------------------------------------------------------------------------------------------------------------
@@ -131,9 +137,10 @@ pgbench=# EXPLAIN select count(*) FROM pgbench_accounts ;
          ->  Partial Aggregate  (cost=19105.42..19105.43 rows=1 width=8)
                ->  Parallel Index Only Scan using pgbench_accounts_pkey on pgbench_accounts  (cost=0.42..18480.42 rows=250000 width=0)
 (5 rows)
-
+~~~~
 Parallel Seq Scan
 
+~~~~sql
 pgbench=# EXPLAIN select * FROM pgbench_accounts where bid = 1000 ;
                                      QUERY PLAN
 ------------------------------------------------------------------------------------
@@ -142,12 +149,13 @@ pgbench=# EXPLAIN select * FROM pgbench_accounts where bid = 1000 ;
    ->  Parallel Seq Scan on pgbench_accounts  (cost=0.00..20426.26 rows=1 width=97)
          Filter: (bid = 1000)
 (4 rows)
-
+~~~~
 Ici, on peut observer seulement 3 workers planifiés : nous y reviendrons dans la partie Limites.
 Parallel Index Scan
 
 Avec la parallélisation :
 
+~~~~xwl
 pgbench=# EXPLAIN select count(aid) from pgbench_accounts where aid > 100 and aid < 1000000 and bid > 1000 and bid < 900000;
                                                       QUERY PLAN                                                       
 -----------------------------------------------------------------------------------------------------------------------
@@ -158,12 +166,13 @@ pgbench=# EXPLAIN select count(aid) from pgbench_accounts where aid > 100 and ai
                Index Cond: ((aid > 100) AND (aid < 1000000))
                Filter: ((bid > 1000) AND (bid < 900000))
 (6 rows)
-
+~~~~
 
 EXPLAIN ANALYZE VERBOSE pour obtenir le détail de chaque worker
 
 Nous avons parlé plus haut du fait que les workers étaient planifiés, mais est-ce que dans les faits, cette planification est bien suivie ? Pour le savoir, il suffit d’utiliser les options (ANALYZE, VERBOSE) de la commande EXPLAIN.
 
+~~~~sql
 pgbench=# EXPLAIN (ANALYZE, VERBOSE) select aid,bid FROM pgbench_accounts where aid > 10000 and bid> 1000 and bid \<100000;
                                                                 QUERY PLAN                                                                 
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -182,11 +191,12 @@ pgbench=# EXPLAIN (ANALYZE, VERBOSE) select aid,bid FROM pgbench_accounts where 
  Planning time: 2.391 ms
  Execution time: 2654.363 ms
 (14 rows)
+~~~~
 
 Agrégat
 
 Sans parallélisation :
-
+~~~~sql
 pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOIN pgbench_tellers t ON a.bid= t.bid  ;
                                                                      QUERY PLAN
 ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -204,9 +214,10 @@ pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOI
  Planning time: 0.614 ms
  Execution time: 15186.707 ms
 (13 rows)
+~~~~
 
 Avec parallélisation :
-
+~~~~sql
 pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOIN pgbench_tellers t ON a.bid= t.bid  ;
                                                                               QUERY PLAN
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -250,9 +261,12 @@ pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOI
  Planning time: 0.587 ms
  Execution time: 8154.206 ms
 (39 rows)
+~~~~
 
 Le temps d’exécution est seulement divisé par 2 malgré le nombre de workers porté à 4. Voici le résultat pour la meme requête avec le paramétrage par défaut :
 
+
+~~~~sql
 pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOIN pgbench_tellers t ON a.bid= t.bid  ;
                                                                               QUERY PLAN
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -286,6 +300,7 @@ pgbench=# EXPLAIN (ANALYZE, VERBOSE) select count(*) FROM pgbench_accounts a JOI
  Planning time: 2.373 ms
  Execution time: 8090.127 ms
 (29 rows)
+~~~~
 
 Le temps d’exécution est identique.
 LIMITES
@@ -315,21 +330,3 @@ Si vous souhaitez désactiver totalement ou limiter l’utilisation de cette fon
 Rappel : ce paramètre se recharge avec reload sans redémarrer l’instance. Si c’est assez pour vous, c’est ici la fin de ce post. Si vous en voulez plus et que ce qui a été dit ici n’est pas suffisant pour vous, la suite au prochain numéro !
 
 A vos marques, prêts… Parallélisez !
-Notre flux
-abonnez vous
-Articles récents
-
-    Les Procédures stockées dans PostgreSQL 11
-    De retour de PGDay Paris
-    De retour de Nordic PGDay
-    PostgreSQL 10.3 et autres correctifs
-    De retour du FOSDEM 2018
-
-Catégories
-
-    toutes (65)
-    formation (5)
-    loxodata (1)
-    technique (29)
-    veille (21)
-    événement (20)
