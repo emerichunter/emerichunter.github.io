@@ -44,7 +44,7 @@ Tip #5: Make use of parallel when it's possible and restrict it when needed.
 
 Tip #6: Make your code readable. You never know when someone will need to update your work.
 
-Tip #7: 
+Tip #7: You can parallel a lot of things nowadays (database, functions, tables(!), you could also physically parallelize = partition or subpartition a table)
 
 ### The cost of living
 
