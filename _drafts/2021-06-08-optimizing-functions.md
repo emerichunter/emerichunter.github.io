@@ -22,10 +22,13 @@ It might not seem obvious to all the users, but the default option for type is V
 
 Tip #1
 *Use explicit type.*
+
 Tip #2
-*Use the strictest type to the behavior you expect from your function. If the type is not permissive enough the database will tell you by throwing an error*
+*Use the strictest type to the behavior you expect from your function. If the type is not permissive enough the database will tell you by throwing an error.*
+
 Tip #3
-*Index whenever you can using the right kind of index (more about that in another post)*
+*Index whenever you can using the right kind of index (more about that in another post). Only IMMUTABLE and STABLE functions allow for this.*
+
 Tip #4
 *Tip #3 implies that the index will be replicated on the secondaries. Use this to your advantage. The index can lower the cost of the calculations made by the functions but could also just be used to balance CPU and memory usage to the standby servers (if no index is used).*
 
