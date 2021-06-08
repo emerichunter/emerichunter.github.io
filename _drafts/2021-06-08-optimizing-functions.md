@@ -55,8 +55,15 @@ Don't stop at optimizing the function. SQL and PLpgSQL can be optimized to.
 * CTEs
 * TEMP TABLE
 * UNLOGGED TABLES
-* JOINS
-* EXPLAIN (ANALYZE)
+* JOINS vs NESTED QUERIES
+* work_mem
+* INDEXES
+* EXPLAIN (ANALYZE) is your friend
+* 
+
+There is a lot more parameters to better the performance (geqo, jit...)
+
+EXPLAIN is your friend
 
 
 
