@@ -52,13 +52,13 @@ Tip #7:
 
 Don't stop at optimizing the function. SQL and PLpgSQL can be optimized to. 
 
+Theses are just a few ways to improve your functions (and your SQL queries in a broader way)
 * CTEs
-* TEMP TABLE
+* work_mem and TEMP TABLE
 * UNLOGGED TABLES
 * JOINS vs NESTED QUERIES vs cartesian product
 * NOT IN vs NOT EXISTS 
 * IN vs VALUES vs ARRAY
-* work_mem
 * INDEXES
 * EXPLAIN (ANALYZE) is your friend
 
