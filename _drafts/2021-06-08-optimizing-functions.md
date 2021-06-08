@@ -48,6 +48,15 @@ Tip #7:
 
 ### Level up the cursor
 
+### Make use of everything you have 
+
+Don't stop at optimizing the function. SQL and PLpgSQL can be optimized to. 
+
+* CTEs
+* TEMP TABLE
+* UNLOGGED TABLES
+* JOINS
+* EXPLAIN (ANALYZE)
 
 
 
