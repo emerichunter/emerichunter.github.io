@@ -25,7 +25,7 @@ Tip #1:
 
 Tip #2:
 *Use the strictest type to the behavior you expect from your function. If the type is not permissive enough the database will tell you by throwing an error.*
-From the doc: a function containing only SELECT commands can safely be marked STABLE. Same for timestamps with timezone.
+From the doc: a function containing only SELECT commands can safely be marked STABLE. Same for a function that relies on timestamps with timezone.
 
 Tip #3:
 *Index whenever you can using the right kind of index (more about that in another post). Only IMMUTABLE and STABLE functions allow for this.*
