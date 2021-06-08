@@ -20,17 +20,17 @@ It might not seem obvious to all the users, but the default option for type is V
 * Indexes on VOLATILE functions are prohibited. No way to index the result to get faster query. 
 * As a result of being the default behavior, any SQL developing software (such as PgAdmin or others) do not display the type and just assume the type is VOLATILE.
 
-Tip #1
+Tip #1:
 *Use explicit type.*
 
-Tip #2
+Tip #2:
 *Use the strictest type to the behavior you expect from your function. If the type is not permissive enough the database will tell you by throwing an error.*
 
-Tip #3
+Tip #3:
 *Index whenever you can using the right kind of index (more about that in another post). Only IMMUTABLE and STABLE functions allow for this.*
 
-Tip #4
-*Tip #3 implies that the index will be replicated on the secondaries. Use this to your advantage. The index can lower the cost of the calculations made by the functions but could also just be used to balance CPU and memory usage to the standby servers (if no index is used).*
+Tip #4:
+*Take note that tip #3 implies that the index will be replicated on the secondaries. Use this to your advantage. The index can lower the cost of the calculations made by the functions but could also just be used to balance CPU and memory usage to the standby servers (if no index is used).*
 
 
 
