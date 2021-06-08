@@ -7,7 +7,7 @@ In this post, I'm going to tell you about optimizing functions (hence the title)
 
 My main first point will be to explain some options from the CREATE FUNCTION and then some other approaches to get the best out of your functions (this applies to procedures as well)
 
-https://www.postgresql.org/docs/12/xfunc-optimization.html
+https://www.postgresql.org/docs/current/xfunc-optimization.html
 
 From this very short entry within the official documentation. There are some takeaways already. The first thing to know is the function type you are using. 
 
@@ -47,6 +47,10 @@ Tip #7:
 ### Pretty maids all in a row/Row your boat
 
 ### Level up the cursor
+
+### C > SQL
+
+Let's face it C is a lot harder to code than a SQL function. But C is faster than SQL. If you have explored every option here, and you think it's too slow, you might want to turn to C. 
 
 ### Make use of everything you have 
 
