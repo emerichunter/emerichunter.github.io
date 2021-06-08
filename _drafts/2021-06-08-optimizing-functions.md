@@ -34,7 +34,21 @@ Tip #4:
 
 ### Parallel whenever possible
 
-Don't needlessly restrict your functions. Postgres handles parallel query through the planner and balances the resources according to max_worker_processes (which is a hard limit), max_parallel_workers, max_parallel_workers_per_gather (ref + check)
+Don't needlessly restrict your functions. Postgres handles parallel query through the planner and balances the resources according to max_worker_processes (which is a hard limit), max_parallel_workers, max_parallel_workers_per_gather (ref + check).
+
+Tip #5: Make use of parallel when it's possible and restrict it when needed.
+
+Tip #6: Make your code readable. You never know when someone will need to update your work.
+
+Tip #7: 
+
+### The cost of living
+
+### Pretty maids all in a row/Row your boat
+
+### Level up the cursor
+
+
 
 
 Enter text in [Markdown](http://daringfireball.net/projects/markdown/). Use the toolbar above, or click the **?** button for formatting help.
