@@ -32,7 +32,9 @@ Tip #3:
 Tip #4:
 *Take note that tip #3 implies that the index will be replicated on the secondaries. Use this to your advantage. The index can lower the cost of the calculations made by the functions but could also just be used to balance CPU and memory usage to the standby servers (if no index is used).*
 
+### Parallel whenever possible
 
+Don't needlessly restrict your functions. Postgres handles parallel query through the planner and balances the resources according to max_worker_processes (which is a hard limit), max_parallel_workers, max_parallel_workers_per_gather (ref + check)
 
 
 Enter text in [Markdown](http://daringfireball.net/projects/markdown/). Use the toolbar above, or click the **?** button for formatting help.
